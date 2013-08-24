@@ -1,4 +1,4 @@
-package utils.exceptions;
+package buffermanager.exceptions;
 
 public class BadPageNumberException extends Exception {
 
