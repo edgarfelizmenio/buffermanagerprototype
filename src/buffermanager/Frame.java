@@ -36,7 +36,7 @@ public class Frame {
 	}
 
 	public String getFilename() {
-		return this.filename;
+		return filename;
 	}
 
 	public Page getPage() {

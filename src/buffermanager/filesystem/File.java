@@ -12,6 +12,5 @@ class File {
 		for (int i = 0; i < numPages; i++) {
 			this.pages[i] = Page.makePage();
 		}
-		FileSystem.directory.put(filename, this);
 	}
 }

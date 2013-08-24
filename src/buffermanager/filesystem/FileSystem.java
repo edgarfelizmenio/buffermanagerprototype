@@ -10,21 +10,33 @@ import buffermanager.page.Page;
 
 
 public class FileSystem {
-	static final HashMap<String, File> directory = new HashMap<String, File>();
 
-	public static void createFile(String filename, int numPages) {
-		new File(filename, numPages);
+	private static final FileSystem instance = new FileSystem();
+	
+	private HashMap<String, File> directory;
+	
+	private FileSystem() {
+		this.directory = new HashMap<String, File>();
+	}
+	
+	public static synchronized FileSystem getInstance() {
+		return instance;
+	}
+	
+	public void createFile(String filename, int numPages) {
+		File file = new File(filename, numPages);
+		directory.put(filename, file);
 	}
 
-	public static boolean erase(String filename) {
-		if (FileSystem.directory.containsKey(filename)) {
-			FileSystem.directory.remove(filename);
+	public boolean erase(String filename) {
+		if (directory.containsKey(filename)) {
+			directory.remove(filename);
 			return true;
 		}
 		return false;
 	}
 
-	public static int allocatePages(String filename, int runSize)
+	public int allocatePages(String filename, int runSize)
 			throws DBFileException {
 
 		if (runSize <= 0) {
@@ -48,7 +60,7 @@ public class FileSystem {
 		return runStart;
 	}
 
-	public static void deallocatePages(String filename, int startPageNum,
+	public void deallocatePages(String filename, int startPageNum,
 			int runSize) throws DBFileException, BadPageNumberException {
 		if (runSize <= 0) {
 			throw new DBFileException("Non positive run size.");
@@ -64,7 +76,7 @@ public class FileSystem {
 		}
 	}
 
-	public static Page readPage(String filename, int pageNum)
+	public Page readPage(String filename, int pageNum)
 			throws BadFileException, BadPageNumberException, DBFileException {
 		if (!directory.containsKey(filename)) {
 			throw new BadFileException();
@@ -83,7 +95,7 @@ public class FileSystem {
 		return f.pages[pageNum].getCopy();
 	}
 
-	public static void writePage(String filename, int pageNum, Page page)
+	public void writePage(String filename, int pageNum, Page page)
 			throws BadFileException, BadPageNumberException, DBFileException {
 		if (!directory.containsKey(filename)) {
 			throw new BadFileException();

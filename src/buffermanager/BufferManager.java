@@ -60,13 +60,13 @@ public class BufferManager {
 			// write the page that the frame contains if the dirty bit for
 			// replacement is on
 			if (frame.isDirty()) {
-				FileSystem.writePage(frame.getFilename(), frame.getPageNum(),
-						frame.getPage());
+				FileSystem.getInstance().writePage(frame.getFilename(),
+						frame.getPageNum(), frame.getPage());
 			}
 
 			// read requested page into replacement frame
 			frame.setPage(fileName, pageId,
-					FileSystem.readPage(fileName, pageId));
+					FileSystem.getInstance().readPage(fileName, pageId));
 		}
 
 		policy.pagePinned(frame);
