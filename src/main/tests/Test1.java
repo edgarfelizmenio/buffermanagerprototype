@@ -1,10 +1,12 @@
-package tests;
+package main.tests;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import tests.exceptions.TestException;
+import main.Test;
+import main.exceptions.TestException;
+
 import buffermanager.BufferManager;
 import buffermanager.Frame;
 import buffermanager.database.exceptions.BadFileException;
@@ -53,7 +55,7 @@ public class Test1 implements Test {
 		System.out.println();
 		
 		// Check if the contents of a dirty page are written to disk
-		for (int i = first; i <= last + 1; i++) {
+		for (int i = first; i <= last; i++) {
 			Frame f = bm.pinPage(i, filename);
 			if (f == null) {
 				throw new TestException("Unable to pin page the 2nd time");	
@@ -63,14 +65,14 @@ public class Test1 implements Test {
 			method.setAccessible(true);
 			Page p = (Page) method.invoke(f);
 			
-			Field contentsField = p.getClass().getField("contents");
+			Field contentsField = p.getClass().getDeclaredField("contents");
 			contentsField.setAccessible(true);
 			char[] contents = (char[])contentsField.get(p);
 			
 			String original = "This is test 1 for page " + i;
 			String readBack = new String(contents);
-			
-			if (readBack.substring(0, original.length()) != original) {
+						
+			if (!original.equals(readBack.substring(0, original.length()))) {
 				throw new TestException("Page content incorrect"); // Contents of dirty page are not propagated to disk.
 			}
 			bm.unpinPage(i, filename, false);

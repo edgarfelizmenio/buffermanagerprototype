@@ -33,8 +33,8 @@ public class BufferManager {
 		try {
 			Class<Policy> policyClass = (Class<Policy>) loader
 					.loadClass("buffermanager.policies." + policy);
-			this.policy = policyClass.getConstructor(
-					new Class[] { Frame[].class }).newInstance(bufferPool);
+			this.policy = policyClass.getConstructor(Frame[].class)
+					.newInstance((Object)bufferPool);
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 			System.err.println("Policy " + policy + " not found, using LRU.");
