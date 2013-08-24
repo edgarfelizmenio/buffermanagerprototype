@@ -1,4 +1,4 @@
-package buffermanager.filesystem;
+package buffermanager.database;
 
 import buffermanager.page.Page;
 

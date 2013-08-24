@@ -9,7 +9,7 @@ public class Frame {
 	private boolean dirty;
 	private Page page;
 
-	public Frame() {
+	Frame() {
 		this.filename = null;
 		this.pageNum = Page.NO_PAGE_NUMBER;
 		this.pinCount = 0;
@@ -17,33 +17,33 @@ public class Frame {
 		this.page = null;
 	}
 
-	public void pin(String filename, int pageNum) {
+	void pin(String filename, int pageNum) {
 		pinCount++;
 	}
 
-	public void unpin() {
+	void unpin() {
 		pinCount--;
 	}
 
-	public void setDirty(boolean dirty) {
+	void setDirty(boolean dirty) {
 		this.dirty = dirty;
 	}
 
-	public void setPage(String filename, int pageNum, Page page) {
+	void setPage(String filename, int pageNum, Page page) {
 		this.filename = filename;
 		this.pageNum = pageNum;
 		this.page = page;
 	}
 
-	public String getFilename() {
-		return filename;
-	}
-
-	public Page getPage() {
+	Page getPage() {
 		return page;
 	}
 
-	public int getPageNum() {
+	String getFilename() {
+		return filename;
+	}
+
+	int getPageNum() {
 		return pageNum;
 	}
 
@@ -51,7 +51,7 @@ public class Frame {
 		return pinCount;
 	}
 
-	public boolean isDirty() {
+	boolean isDirty() {
 		return this.dirty;
 	}
 

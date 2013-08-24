@@ -26,4 +26,11 @@ public class Page implements Cloneable {
 
 		return copy;
 	}
+	
+	//Assumption: length of contents will not exceed page size
+	public void setContents(char[] contents) {
+		for (int i = 0; i < contents.length; i++) {
+			this.contents[i] = contents[i];
+		}
+	}
 }

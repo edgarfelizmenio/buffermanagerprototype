@@ -2,10 +2,12 @@ package buffermanager;
 
 import java.lang.reflect.InvocationTargetException;
 
-import buffermanager.exceptions.BadFileException;
-import buffermanager.exceptions.BadPageNumberException;
-import buffermanager.exceptions.DBFileException;
-import buffermanager.filesystem.FileSystem;
+import buffermanager.database.FileSystem;
+import buffermanager.database.exceptions.BadFileException;
+import buffermanager.database.exceptions.BadPageNumberException;
+import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PagePinnedException;
+import buffermanager.page.Page;
 import buffermanager.policies.LRU;
 
 public class BufferManager {
@@ -21,6 +23,10 @@ public class BufferManager {
 			InvocationTargetException, NoSuchMethodException {
 
 		this.bufferPool = new Frame[bufferSize];
+
+		for (int i = 0; i < bufferSize; i++) {
+			bufferPool[i] = new Frame();
+		}
 
 		// load the buffer replacement policy
 		ClassLoader loader = BufferManager.class.getClassLoader();
@@ -45,6 +51,7 @@ public class BufferManager {
 			if ((f.getFilename() == fileName) && (f.getPageNum() == pageId)) {
 				f.pin(fileName, pageId);
 				frame = f;
+				policy.pagePinned(frame);
 				break;
 			}
 		}
@@ -54,22 +61,27 @@ public class BufferManager {
 			// choose a frame for replacement
 			frame = policy.chooseFrame();
 
-			// increment pin count
-			frame.pin(fileName, pageId);
+			if (frame != null) {
+				// increment pin count
+				frame.pin(fileName, pageId);
 
-			// write the page that the frame contains if the dirty bit for
-			// replacement is on
-			if (frame.isDirty()) {
-				FileSystem.getInstance().writePage(frame.getFilename(),
-						frame.getPageNum(), frame.getPage());
+				// write the page that the frame contains if the dirty bit for
+				// replacement is on
+				if (frame.isDirty()) {
+					frame.setDirty(false);
+					FileSystem.getInstance().writePage(frame.getFilename(),
+							frame.getPageNum(), frame.getPage());
+				}
+
+				// read requested page into replacement frame
+				frame.setPage(fileName, pageId, FileSystem.getInstance()
+						.readPage(fileName, pageId));
+				policy.pagePinned(frame);
 			}
-
-			// read requested page into replacement frame
-			frame.setPage(fileName, pageId,
-					FileSystem.getInstance().readPage(fileName, pageId));
 		}
 
-		policy.pagePinned(frame);
+		// return null if frame is null
+
 		return frame;
 	}
 
@@ -84,4 +96,70 @@ public class BufferManager {
 		}
 	}
 
+	public Frame newPage(int numPages, String fileName) throws DBFileException,
+			BadFileException, BadPageNumberException {
+		int pageId = FileSystem.getInstance().allocatePages(fileName, numPages);
+		Frame f = this.pinPage(pageId, fileName);
+
+		if (f == null) {
+			FileSystem.getInstance()
+					.deallocatePages(fileName, pageId, numPages);
+		}
+
+		return f;
+	}
+
+	public void freePage(String filename, int pageId)
+			throws PagePinnedException, DBFileException, BadPageNumberException {
+		int frameNumber = this.findFrame(pageId, filename);
+		if (frameNumber != -1) {
+			Frame f = bufferPool[frameNumber];
+			if (f.getPinCount() > 0) {
+				throw new PagePinnedException();
+			}
+
+			f.setPage(null, Page.NO_PAGE_NUMBER, null);
+
+			FileSystem.getInstance().deallocatePages(filename, pageId, 1);
+		}
+	}
+
+	public void flushPage(String filename, int pageId) throws BadFileException,
+			BadPageNumberException, DBFileException {
+		int frameNumber = findFrame(pageId, filename);
+		if (frameNumber > -1) {
+			Frame f = bufferPool[frameNumber];
+			if (f.isDirty()) {
+				f.setDirty(false);
+				FileSystem.getInstance().writePage(filename, pageId,
+						f.getPage());
+			}
+		}
+	}
+
+	public void flushPages() throws BadFileException, BadPageNumberException,
+			DBFileException {
+		for (Frame f : bufferPool) {
+			if (f.isDirty()) {
+				f.setDirty(false);
+				FileSystem.getInstance().writePage(f.getFilename(),
+						f.getPageNum(), f.getPage());
+			}
+		}
+	}
+
+	public int findFrame(int pageId, String fileName) {
+		for (int i = 0; i < bufferPool.length; i++) {
+			if ((!bufferPool[i].isFree())
+					&& (bufferPool[i].getFilename() == fileName && bufferPool[i]
+							.getPageNum() == pageId)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public int getPoolSize() {
+		return bufferPool.length;
+	}
 }

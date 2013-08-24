@@ -1,22 +1,24 @@
 package buffermanager.policies;
 
-import java.util.Arrays;
+import java.util.HashMap;
 
 import buffermanager.Frame;
 import buffermanager.Policy;
 
 public class Clock extends Policy {
 
-	int current;
-	boolean[] referenced;
+	private int current;
+	private HashMap<Frame, Boolean> isReferenced;
 
 	public Clock(Frame[] bufferPool) {
 		super(bufferPool);
 
 		this.current = 0;
-		this.referenced = new boolean[bufferPool.length];
+		this.isReferenced = new HashMap<Frame,Boolean>(); 
 
-		Arrays.fill(referenced, false);
+		for (Frame f: bufferPool) {
+			isReferenced.put(f, false);
+		}
 
 	}
 
@@ -33,8 +35,8 @@ public class Clock extends Policy {
 		do {
 			if (bufferPool[current].getPinCount() > 0) {
 				current++;
-			} else if (referenced[current] == true) {
-				referenced[current] = false;
+			} else if (isReferenced.get(bufferPool[current])) {
+				isReferenced.put(bufferPool[current],false);
 				current++;
 			} else {
 				frame = bufferPool[current];
@@ -51,20 +53,12 @@ public class Clock extends Policy {
 
 	@Override
 	public void pagePinned(Frame f) {
-		// TODO Auto-generated method stub
-
+		// Do nothing.
 	}
-
+		
 	@Override
 	public void pageUnpinned(Frame f) {
-		if (f.getPinCount() == 0) {
-			for (int i = 0; i < bufferPool.length; i++) {
-				if ((bufferPool[i].getFilename() == f.getFilename())
-						&& (bufferPool[i].getPageNum() == f.getPageNum())) {
-					referenced[i] = true;
-				}
-			}
-		}
+		isReferenced.put(f, true);
 	}
 
 }
