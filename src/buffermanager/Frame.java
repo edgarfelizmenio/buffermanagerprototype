@@ -18,11 +18,6 @@ public class Frame {
 	}
 
 	public void pin(String filename, int pageNum) {
-		if ((this.filename != filename) || (this.pageNum != pageNum)) {
-			this.filename = filename;
-			this.pageNum = pageNum;
-			this.pinCount = 0;
-		}
 		pinCount++;
 	}
 
@@ -30,20 +25,18 @@ public class Frame {
 		pinCount--;
 	}
 
-	public String getFilename() {
-		return this.filename;
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
 	}
 
-	public void setPage(Page page) {
+	public void setPage(String filename, int pageNum, Page page) {
+		this.filename = filename;
+		this.pageNum = pageNum;
 		this.page = page;
 	}
 
-	public void setPageNum(int pageNum) {
-		this.pageNum = pageNum;
-	}
-
-	public void setDirty(boolean dirty) {
-		this.dirty = dirty;
+	public String getFilename() {
+		return this.filename;
 	}
 
 	public Page getPage() {

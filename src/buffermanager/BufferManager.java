@@ -1,6 +1,6 @@
 package buffermanager;
 
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
 
 import buffermanager.exceptions.BadFileException;
 import buffermanager.exceptions.BadPageNumberException;
@@ -22,7 +22,7 @@ public class BufferManager {
 
 		this.bufferPool = new Frame[bufferSize];
 
-		//load the buffer replacement policy
+		// load the buffer replacement policy
 		ClassLoader loader = BufferManager.class.getClassLoader();
 		try {
 			Class<Policy> policyClass = (Class<Policy>) loader
@@ -39,8 +39,8 @@ public class BufferManager {
 	public Frame pinPage(int pageId, String fileName) throws BadFileException,
 			BadPageNumberException, DBFileException {
 		Frame frame = null;
-		
-		//case 1: frame is in the buffer pool
+
+		// case 1: frame is in the buffer pool
 		for (Frame f : bufferPool) {
 			if ((f.getFilename() == fileName) && (f.getPageNum() == pageId)) {
 				f.pin(fileName, pageId);
@@ -49,20 +49,24 @@ public class BufferManager {
 			}
 		}
 
-		//case 2: frame is not in the buffer pool
+		// case 2: frame is not in the buffer pool
 		if (frame == null) {
-			//choose a frame for replacement
+			// choose a frame for replacement
 			frame = policy.chooseFrame();
-			
-			//write the page that the frame contains if the dirty bit for replacement is on
+
+			// increment pin count
+			frame.pin(fileName, pageId);
+
+			// write the page that the frame contains if the dirty bit for
+			// replacement is on
 			if (frame.isDirty()) {
-				FileSystem.writePage(frame.getFilename(), frame.getPageNum(), frame.getPage());
+				FileSystem.writePage(frame.getFilename(), frame.getPageNum(),
+						frame.getPage());
 			}
-			
-			//increment pin count
-			frame.pin(fileName,pageId);
-			//read requested page into replacement frame
-			frame.setPage(FileSystem.readPage(fileName, pageId));
+
+			// read requested page into replacement frame
+			frame.setPage(fileName, pageId,
+					FileSystem.readPage(fileName, pageId));
 		}
 
 		policy.pagePinned(frame);
@@ -74,10 +78,10 @@ public class BufferManager {
 			if ((f.getFilename() == fileName) && (f.getPageNum() == pageId)) {
 				f.unpin();
 				f.setDirty(dirty);
-				policy.pagePinned(f);
+				policy.pageUnpinned(f);
 				break;
 			}
 		}
-
 	}
+
 }
