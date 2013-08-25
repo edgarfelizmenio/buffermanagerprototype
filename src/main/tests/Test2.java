@@ -31,7 +31,7 @@ public class Test2 implements Test {
 		int poolSize = 20;
 		String filename = "test";
 		FileSystem.getInstance().createFile(filename, 0);
-		BufferManager bm = new BufferManager(poolSize, "Clock");		
+		BufferManager bm = new BufferManager(poolSize, "ClockPolicy");		
 		
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;

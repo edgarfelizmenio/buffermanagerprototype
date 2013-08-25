@@ -5,11 +5,11 @@ import java.util.Stack;
 import buffermanager.Frame;
 import buffermanager.Policy;
 
-public class MRU extends Policy {
+public class MRUPolicy extends Policy {
 
 	private Stack<Frame> recentlyUsedFrames;
 
-	public MRU(Frame[] bufferPool) {
+	public MRUPolicy(Frame[] bufferPool) {
 		super(bufferPool);
 		this.recentlyUsedFrames = new Stack<Frame>();
 	}

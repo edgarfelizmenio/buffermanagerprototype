@@ -8,7 +8,7 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PagePinnedException;
 import buffermanager.page.Page;
-import buffermanager.policies.LRU;
+import buffermanager.policies.LRUPolicy;
 
 public class BufferManager {
 	public static int DEFAULT_BUFFER_SIZE = 10;
@@ -172,7 +172,7 @@ public class BufferManager {
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 			System.err.println("Policy " + policy + " not found, using LRU.");
-			this.policy = new LRU(bufferPool);
+			this.policy = new LRUPolicy(bufferPool);
 		}
 	}
 }

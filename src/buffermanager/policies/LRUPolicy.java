@@ -6,11 +6,11 @@ import buffermanager.Frame;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class LRU extends Policy {
+public class LRUPolicy extends Policy {
 
 	private Queue<Frame> recentlyUsedFrames;
 	
-	public LRU(Frame[] bufferPool) {
+	public LRUPolicy(Frame[] bufferPool) {
 		super(bufferPool);
 		this.recentlyUsedFrames = new LinkedList<Frame>();
 	}

@@ -5,12 +5,12 @@ import java.util.HashMap;
 import buffermanager.Frame;
 import buffermanager.Policy;
 
-public class Clock extends Policy {
+public class ClockPolicy extends Policy {
 
 	private int current;
 	private HashMap<Frame, Boolean> isReferenced;
 
-	public Clock(Frame[] bufferPool) {
+	public ClockPolicy(Frame[] bufferPool) {
 		super(bufferPool);
 
 		this.current = 0;

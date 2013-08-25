@@ -1,20 +1,13 @@
 package main;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import main.exceptions.TestException;
-
-import buffermanager.BufferManager;
-import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
@@ -51,16 +44,16 @@ public class Main {
 		for (Class<Test> c : tests) {
 			Test t;
 			try {
-				System.out.println("Start of test " + i);
+				System.out.println("Start of " + c.getName());
 				t = c.getConstructor(null).newInstance();
 				t.execute();
-				System.out.println("Test " + i + " passed.");
+				System.out.println(c.getName() + " passed.\n");
 			} catch (NoSuchMethodException | SecurityException
 					| IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchFieldException
 					| InstantiationException | DBFileException
 					| BadFileException | BadPageNumberException | TestException e) {
-				System.out.println("Test " + i + " failed.");
+				System.out.println(c.getName() + " failed.");
 				e.printStackTrace();
 			}
 			i++;

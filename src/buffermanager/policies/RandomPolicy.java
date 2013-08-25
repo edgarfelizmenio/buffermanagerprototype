@@ -6,12 +6,12 @@ import java.util.List;
 import buffermanager.Frame;
 import buffermanager.Policy;
 
-public class Random extends Policy {
+public class RandomPolicy extends Policy {
 
 	private List<Frame> usedFrames;
 	private java.util.Random random;
 
-	public Random(Frame[] bufferPool) {
+	public RandomPolicy(Frame[] bufferPool) {
 		super(bufferPool);
 		this.usedFrames = new ArrayList<Frame>();
 		this.random = new java.util.Random();
