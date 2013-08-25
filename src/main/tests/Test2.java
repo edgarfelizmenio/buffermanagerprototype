@@ -28,6 +28,7 @@ public class Test2 implements Test {
 			IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, InstantiationException,
 			ClassNotFoundException {
+
 		String[] policies = { "LRUPolicy", "MRUPolicy", "ClockPolicy",
 				"RandomPolicy" };
 
@@ -43,14 +44,14 @@ public class Test2 implements Test {
 			NoSuchMethodException, ClassNotFoundException, DBFileException,
 			BadFileException, BadPageNumberException, TestException,
 			NoSuchFieldException {
-		
+
 		int poolSize = 20;
 		String filename = "test";
 		FileSystem.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
-		
+
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;
 

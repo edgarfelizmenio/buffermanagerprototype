@@ -11,6 +11,7 @@ import main.exceptions.TestException;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PagePinnedException;
 
 public class Main {
 	@SuppressWarnings("unchecked")
@@ -52,7 +53,8 @@ public class Main {
 					| IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchFieldException
 					| InstantiationException | DBFileException
-					| BadFileException | BadPageNumberException | TestException e) {
+					| BadFileException | BadPageNumberException
+					| PagePinnedException | TestException e) {
 				System.out.println(c.getName() + " failed.");
 				e.printStackTrace();
 				System.out.println(e);
