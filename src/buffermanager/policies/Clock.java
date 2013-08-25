@@ -14,9 +14,9 @@ public class Clock extends Policy {
 		super(bufferPool);
 
 		this.current = 0;
-		this.isReferenced = new HashMap<Frame,Boolean>(); 
+		this.isReferenced = new HashMap<Frame, Boolean>();
 
-		for (Frame f: bufferPool) {
+		for (Frame f : bufferPool) {
 			isReferenced.put(f, false);
 		}
 
@@ -32,21 +32,34 @@ public class Clock extends Policy {
 		}
 
 		int start = current;
-		do {
+		int replacements = 0;
+
+		while (true) {
 			if (bufferPool[current].getPinCount() > 0) {
 				current++;
 			} else if (isReferenced.get(bufferPool[current])) {
-				isReferenced.put(bufferPool[current],false);
+				isReferenced.put(bufferPool[current], false);
 				current++;
+				replacements++;
+
 			} else {
 				frame = bufferPool[current];
+				current++;
+				if (current >= bufferPool.length) {
+					current = 0;
+				}
 				break;
 			}
 
 			if (current >= bufferPool.length) {
 				current = 0;
 			}
-		} while (start != current);
+
+			if (start == current && replacements == 0) {
+				frame = null;
+				break;
+			}
+		}
 
 		return frame;
 	}
@@ -55,7 +68,7 @@ public class Clock extends Policy {
 	public void pagePinned(Frame f) {
 		// Do nothing.
 	}
-		
+
 	@Override
 	public void pageUnpinned(Frame f) {
 		isReferenced.put(f, true);

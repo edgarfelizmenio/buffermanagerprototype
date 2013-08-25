@@ -42,14 +42,14 @@ public class BufferManager {
 		}
 	}
 
-	public Frame pinPage(int pageId, String fileName) throws BadFileException,
+	public Frame pinPage(int pageId, String filename) throws BadFileException,
 			BadPageNumberException, DBFileException {
 		Frame frame = null;
 
 		// case 1: frame is in the buffer pool
 		for (Frame f : bufferPool) {
-			if ((f.getFilename() == fileName) && (f.getPageNum() == pageId)) {
-				f.pin(fileName, pageId);
+			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
+				f.pin(filename, pageId);
 				frame = f;
 				policy.pagePinned(frame);
 				break;
@@ -63,7 +63,7 @@ public class BufferManager {
 
 			if (frame != null) {
 				// increment pin count
-				frame.pin(fileName, pageId);
+				frame.pin(filename, pageId);
 
 				// write the page that the frame contains if the dirty bit for
 				// replacement is on
@@ -74,8 +74,8 @@ public class BufferManager {
 				}
 
 				// read requested page into replacement frame
-				frame.setPage(fileName, pageId, FileSystem.getInstance()
-						.readPage(fileName, pageId));
+				frame.setPage(filename, pageId, FileSystem.getInstance()
+						.readPage(filename, pageId));
 				policy.pagePinned(frame);
 			}
 		}
@@ -85,9 +85,9 @@ public class BufferManager {
 		return frame;
 	}
 
-	public void unpinPage(int pageId, String fileName, boolean dirty) {
+	public void unpinPage(int pageId, String filename, boolean dirty) {
 		for (Frame f : bufferPool) {
-			if ((f.getFilename() == fileName) && (f.getPageNum() == pageId)) {
+			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
 				f.unpin();
 				f.setDirty(dirty);
 				policy.pageUnpinned(f);
@@ -96,14 +96,14 @@ public class BufferManager {
 		}
 	}
 
-	public Frame newPage(int numPages, String fileName) throws DBFileException,
+	public Frame newPage(int numPages, String filename) throws DBFileException,
 			BadFileException, BadPageNumberException {
-		int pageId = FileSystem.getInstance().allocatePages(fileName, numPages);
-		Frame f = this.pinPage(pageId, fileName);
+		int pageId = FileSystem.getInstance().allocatePages(filename, numPages);
+		Frame f = this.pinPage(pageId, filename);
 
 		if (f == null) {
 			FileSystem.getInstance()
-					.deallocatePages(fileName, pageId, numPages);
+					.deallocatePages(filename, pageId, numPages);
 		}
 
 		return f;
@@ -148,10 +148,11 @@ public class BufferManager {
 		}
 	}
 
-	public int findFrame(int pageId, String fileName) {
+	public int findFrame(int pageId, String filename) {
 		for (int i = 0; i < bufferPool.length; i++) {
+//			System.out.println(i + " " + bufferPool[i] + " " + bufferPool[i].isFree() + " " + bufferPool[i].isDirty() + " " + bufferPool[i].getFilename() + " " + bufferPool[i].getPageNum() + " " + pageId + " " + filename);
 			if ((!bufferPool[i].isFree())
-					&& (bufferPool[i].getFilename() == fileName && bufferPool[i]
+					&& (bufferPool[i].getFilename() == filename && bufferPool[i]
 							.getPageNum() == pageId)) {
 				return i;
 			}

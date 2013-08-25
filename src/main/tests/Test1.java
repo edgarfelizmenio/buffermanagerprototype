@@ -14,14 +14,14 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.page.Page;
 
+/**
+ * Tests the pinPage, unpinPage, and writing dirty pages to disk.
+ *
+ */
 public class Test1 implements Test {
 
 	@Override
-	public void execute(BufferManager bm, String filename)
-			throws DBFileException, BadFileException, BadPageNumberException,
-			TestException, NoSuchMethodException, SecurityException,
-			IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchFieldException {
+	public void execute(BufferManager bm, String filename) throws DBFileException, BadFileException, BadPageNumberException, TestException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;

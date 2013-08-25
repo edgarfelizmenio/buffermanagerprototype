@@ -26,7 +26,8 @@ public class Main {
 			NoSuchFieldException, InstantiationException, DBFileException,
 			BadFileException, BadPageNumberException, TestException,
 			IOException, URISyntaxException {
-
+		int poolSize = 20;
+		
 		String packagename = "main.tests";
 		String path = packagename.replace('.', '/');
 		System.out.println(path);
@@ -52,7 +53,7 @@ public class Main {
 		for (Class<Test> c: tests) {
 			Test t = c.getConstructor(null).newInstance();
 			FileSystem.getInstance().createFile("test", 0);
-			t.execute(new BufferManager(100, "LRU"), "test");
+			t.execute(new BufferManager(poolSize, "Clock"), "test");
 		}
 
 
