@@ -36,23 +36,15 @@ public class Clock extends Policy {
 
 		while (true) {
 			if (bufferPool[current].getPinCount() > 0) {
-				current++;
+				updateCurrent();
 			} else if (isReferenced.get(bufferPool[current])) {
 				isReferenced.put(bufferPool[current], false);
-				current++;
+				updateCurrent();
 				replacements++;
-
 			} else {
 				frame = bufferPool[current];
-				current++;
-				if (current >= bufferPool.length) {
-					current = 0;
-				}
+				updateCurrent();
 				break;
-			}
-
-			if (current >= bufferPool.length) {
-				current = 0;
 			}
 
 			if (start == current && replacements == 0) {
@@ -72,6 +64,13 @@ public class Clock extends Policy {
 	@Override
 	public void pageUnpinned(Frame f) {
 		isReferenced.put(f, true);
+	}
+
+	private void updateCurrent() {
+		current++;
+		if (current >= bufferPool.length) {
+			current = 0;
+		}
 	}
 
 }
