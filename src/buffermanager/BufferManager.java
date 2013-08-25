@@ -20,7 +20,8 @@ public class BufferManager {
 	public BufferManager(int bufferSize, String policy)
 			throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, SecurityException,
-			InvocationTargetException, NoSuchMethodException {
+			InvocationTargetException, NoSuchMethodException,
+			ClassNotFoundException {
 
 		this.bufferPool = new Frame[bufferSize];
 
@@ -29,17 +30,7 @@ public class BufferManager {
 		}
 
 		// load the buffer replacement policy
-		ClassLoader loader = BufferManager.class.getClassLoader();
-		try {
-			Class<Policy> policyClass = (Class<Policy>) loader
-					.loadClass("buffermanager.policies." + policy);
-			this.policy = policyClass.getConstructor(Frame[].class)
-					.newInstance((Object)bufferPool);
-		} catch (ClassNotFoundException cnfe) {
-			cnfe.printStackTrace();
-			System.err.println("Policy " + policy + " not found, using LRU.");
-			this.policy = new LRU(bufferPool);
-		}
+		loadPolicy(policy);
 	}
 
 	public Frame pinPage(int pageId, String filename) throws BadFileException,
@@ -74,8 +65,10 @@ public class BufferManager {
 				}
 
 				// read requested page into replacement frame
-				frame.setPage(filename, pageId, FileSystem.getInstance()
-						.readPage(filename, pageId));
+				Page p = Page.makePage();
+				FileSystem.getInstance().readPage(filename, pageId, p);
+				
+				frame.setPage(filename, pageId, p);
 				policy.pagePinned(frame);
 			}
 		}
@@ -150,7 +143,6 @@ public class BufferManager {
 
 	public int findFrame(int pageId, String filename) {
 		for (int i = 0; i < bufferPool.length; i++) {
-//			System.out.println(i + " " + bufferPool[i] + " " + bufferPool[i].isFree() + " " + bufferPool[i].isDirty() + " " + bufferPool[i].getFilename() + " " + bufferPool[i].getPageNum() + " " + pageId + " " + filename);
 			if ((!bufferPool[i].isFree())
 					&& (bufferPool[i].getFilename() == filename && bufferPool[i]
 							.getPageNum() == pageId)) {
@@ -162,5 +154,25 @@ public class BufferManager {
 
 	public int getPoolSize() {
 		return bufferPool.length;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void loadPolicy(String policy) throws ClassNotFoundException,
+			InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException, SecurityException {
+
+		ClassLoader loader = BufferManager.class.getClassLoader();
+		try {
+			Class<Policy> policyClass = (Class<Policy>) loader
+					.loadClass("buffermanager.policies." + policy);
+			;
+			this.policy = policyClass.getConstructor(Frame[].class)
+					.newInstance((Object) bufferPool);
+		} catch (ClassNotFoundException cnfe) {
+			cnfe.printStackTrace();
+			System.err.println("Policy " + policy + " not found, using LRU.");
+			this.policy = new LRU(bufferPool);
+		}
 	}
 }

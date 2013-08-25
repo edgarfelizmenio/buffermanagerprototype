@@ -20,14 +20,11 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 
 public class Main {
-	public static void main(String[] args) throws ClassNotFoundException,
-			NoSuchMethodException, SecurityException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException,
-			NoSuchFieldException, InstantiationException, DBFileException,
-			BadFileException, BadPageNumberException, TestException,
-			IOException, URISyntaxException {
+	@SuppressWarnings("unchecked")
+	public static void main(String[] args) throws URISyntaxException,
+			ClassNotFoundException {
 		int poolSize = 20;
-		
+
 		String packagename = "main.tests";
 		String path = packagename.replace('.', '/');
 		System.out.println(path);
@@ -40,7 +37,7 @@ public class Main {
 
 		File directory = new File(resource.toURI());
 		System.out.println(directory);
-		
+
 		List<Class<Test>> tests = new ArrayList<Class<Test>>();
 
 		for (String f : directory.list()) {
@@ -49,13 +46,25 @@ public class Main {
 			System.out.println(className);
 			tests.add((Class<Test>) Class.forName(className));
 		}
-		
-		for (Class<Test> c: tests) {
-			Test t = c.getConstructor(null).newInstance();
-			FileSystem.getInstance().createFile("test", 0);
-			t.execute(new BufferManager(poolSize, "Clock"), "test");
-		}
 
+		int i = 1;
+		for (Class<Test> c : tests) {
+			Test t;
+			try {
+				System.out.println("Start of test " + i);
+				t = c.getConstructor(null).newInstance();
+				t.execute();
+				System.out.println("Test " + i + " passed.");
+			} catch (NoSuchMethodException | SecurityException
+					| IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchFieldException
+					| InstantiationException | DBFileException
+					| BadFileException | BadPageNumberException | TestException e) {
+				System.out.println("Test " + i + " failed.");
+				e.printStackTrace();
+			}
+			i++;
+		}
 
 	}
 }

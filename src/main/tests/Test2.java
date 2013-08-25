@@ -1,107 +1,94 @@
 package main.tests;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-import buffermanager.BufferManager;
-import buffermanager.Frame;
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
 import main.Test;
 import main.exceptions.TestException;
 
+import buffermanager.BufferManager;
+import buffermanager.Frame;
+import buffermanager.database.FileSystem;
+import buffermanager.database.exceptions.BadFileException;
+import buffermanager.database.exceptions.BadPageNumberException;
+import buffermanager.database.exceptions.DBFileException;
+import buffermanager.page.Page;
+
 /**
- * Tests the buffer replacement policy.
+ * Tests the pinPage, unpinPage, and writing dirty pages to disk.
  * 
  */
 public class Test2 implements Test {
 
 	@Override
-	public void execute(BufferManager bm, String filename)
+	public void execute()
 			throws DBFileException, BadFileException, BadPageNumberException,
 			TestException, NoSuchMethodException, SecurityException,
 			IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchFieldException {
+			InvocationTargetException, NoSuchFieldException, InstantiationException, ClassNotFoundException {
 
-		System.out.println("TEST 2");
-
-		Frame f;
-
-		// allocate some pages
-		f = bm.newPage(5 * bm.getPoolSize(), filename);
-		bm.unpinPage(0, filename, false);
+		int poolSize = 20;
+		String filename = "test";
+		FileSystem.getInstance().createFile(filename, 0);
+		BufferManager bm = new BufferManager(poolSize, "Clock");		
 		
-		int[] frameNumbers = new int[bm.getPoolSize()];
+		int first = 5;
+		int last = first + bm.getPoolSize() + 5;
 
-		for (int i = 0; i < bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
+		bm.newPage(last + 10, filename);
+		bm.unpinPage(0, filename, false);
+
+		// Pin the pages and modify the contents
+		for (int i = first; i <= last; i++) {
+			Frame f = bm.pinPage(i, filename);
 			if (f == null) {
-				throw new TestException("Unable to pin page");
+				throw new TestException("Unable to pin page 1st time");
 			}
+			System.out.println("After pin page " + i);
 
-			frameNumbers[i] = bm.findFrame(i + 5, filename);
-			if (frameNumbers[i] < 0 || frameNumbers[i] >= bm.getPoolSize()) {
-				throw new TestException("Invalid frame returned");
-			}
+			char[] data = ("This is test 1 for page " + i).toCharArray();
 
-			System.out.println("Page " + (i + 5) + " at frame "
-					+ frameNumbers[i] + " is pinned.");
+			Method method = f.getClass().getDeclaredMethod("getPage");
+			method.setAccessible(true);
+			Page p = (Page) method.invoke(f);
+
+			p.setContents(data);
+
+			bm.unpinPage(i, filename, true);
+
+			System.out.println("After unpin page " + i);
 		}
 
-		// try pinning an extra page
-		f = bm.pinPage(bm.getPoolSize() + 6, filename);
-		if (f != null) {
-			throw new TestException("Pinned page in full buffer");
-		}
+		System.out.println();
 
-		// Start unpinning pages
-		for (int i = bm.getPoolSize() - 1; i >= 0; i--) {
-			bm.unpinPage(i + 5, filename, true);
-			System.out.println("Page " + (i + 5) + " at frame "
-					+ frameNumbers[i] + " is unpinned.");
-		}
-
-		// Start pinning a new set of pages again. The page frames should be
-		// exactly the same order as the previous one. Clock in that case will
-		// resemble MRU.
-		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
+		// Check if the contents of a dirty page are written to disk
+		for (int i = first; i <= last; i++) {
+			Frame f = bm.pinPage(i, filename);
 			if (f == null) {
-				throw new TestException("Unable to pin page");
+				throw new TestException("Unable to pin page the 2nd time");
 			}
 
-			int frameNumber = bm.findFrame(i + 5, filename);
-			System.out.println("Page " + (i + 5) + " pinned in frame "
-					+ frameNumber);
+			Method method = f.getClass().getDeclaredMethod("getPage");
+			method.setAccessible(true);
+			Page p = (Page) method.invoke(f);
 
-			if (frameNumber != frameNumbers[i - bm.getPoolSize()]) {
-				throw new TestException("Frame number incorrect!");
-			}
-		}
+			Field contentsField = p.getClass().getDeclaredField("contents");
+			contentsField.setAccessible(true);
+			char[] contents = (char[]) contentsField.get(p);
 
-		// Unpin half the pages in order.
-		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i += 2) {
-			bm.unpinPage(i + 5, filename, true);
-			System.out.println("Page " + (i + 5) + " at frame "
-					+ frameNumbers[i - bm.getPoolSize()] + " is unpinned.");
-		}
+			String original = "This is test 1 for page " + i;
+			String readBack = new String(contents);
 
-		// Now, pin a new set of pages. Again, it should resemble the previous
-		// sequence. In this case, Clock behaves as LRU
-		for (int i = 2 * bm.getPoolSize(); i < 3 * bm.getPoolSize(); i += 2) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
-				throw new TestException("Unable to pin page");
+			if (!original.equals(readBack.substring(0, original.length()))) {
+				throw new TestException("Page content incorrect"); // Contents
+																	// of dirty
+																	// page are
+																	// not
+																	// propagated
+																	// to disk.
 			}
-			
-			int frameNumber = bm.findFrame(i + 5, filename);
-			bm.unpinPage(i + 5, filename, true);
-			bm.unpinPage(i - bm.getPoolSize() + 6, filename, true);
-			
-			System.out.println("Page " + (i + 5) + " pinned in frame " + frameNumber);
-			if (frameNumber != frameNumbers[i - (2 * bm.getPoolSize())]) {
-				throw new TestException("Frame number incorrect!");
-			}
+			bm.unpinPage(i, filename, false);
 		}
 	}
 

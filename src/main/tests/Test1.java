@@ -1,82 +1,88 @@
 package main.tests;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Arrays;
 
-import main.Test;
-import main.exceptions.TestException;
-
-import buffermanager.BufferManager;
-import buffermanager.Frame;
+import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.page.Page;
+import main.Test;
+import main.exceptions.TestException;
 
 /**
- * Tests the pinPage, unpinPage, and writing dirty pages to disk.
- *
+ * Test stub for the FileSystem
+ * 
  */
 public class Test1 implements Test {
 
 	@Override
-	public void execute(BufferManager bm, String filename) throws DBFileException, BadFileException, BadPageNumberException, TestException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
-		
-		int first = 5;
-		int last = first + bm.getPoolSize() + 5;
+	public void execute() throws DBFileException, BadFileException,
+			BadPageNumberException, TestException, NoSuchMethodException,
+			SecurityException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException,
+			NoSuchFieldException, InstantiationException,
+			ClassNotFoundException {
 
-		bm.newPage(last + 10, filename);
-		bm.unpinPage(0, filename, false);
+		FileSystem fs = FileSystem.getInstance();
 
-		System.out.println("TEST 1");
+		fs.createFile("testing", 5);
 
-		// Pin the pages and modify the contents
-		for (int i = first; i <= last; i++) {
-			Frame f = bm.pinPage(i, filename);
-			if (f == null) {
-				throw new TestException("Unable to pin page 1st time");
-			}
-			System.out.println("After pin page " + i);
+		fs.allocatePages("testing", 4); // file now has 9 pages (0-8)
+		fs.deallocatePages("testing", 1, 2); // pages 1-2 will be deleted.
+												// file now has 7 pages
 
-			char[] data = ("This is test 1 for page " + i).toCharArray();
+		System.out.println(fs.allocatePages("testing", 2)); // page 9 and 10
+		System.out.println(fs.allocatePages("testing", 1)); // page 11
 
-			Method method = f.getClass().getDeclaredMethod("getPage");
-			method.setAccessible(true);
-			Page p = (Page) method.invoke(f);
+		Page p = Page.makePage();
 
-			p.setContents(data);
+		p.setContents(1, "K".toCharArray());
+		p.setContents(2, "R".toCharArray());
 
-			bm.unpinPage(i, filename, true);
-
-			System.out.println("After unpin page " + i);
-		}
-
+		fs.writePage("testing", 3, p);
+		fs.readPage("testing", 0, p);
+		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+				1, 10)));
 		System.out.println();
-		
-		// Check if the contents of a dirty page are written to disk
-		for (int i = first; i <= last; i++) {
-			Frame f = bm.pinPage(i, filename);
-			if (f == null) {
-				throw new TestException("Unable to pin page the 2nd time");	
-			}
-			
-			Method method = f.getClass().getDeclaredMethod("getPage");
-			method.setAccessible(true);
-			Page p = (Page) method.invoke(f);
-			
-			Field contentsField = p.getClass().getDeclaredField("contents");
-			contentsField.setAccessible(true);
-			char[] contents = (char[])contentsField.get(p);
-			
-			String original = "This is test 1 for page " + i;
-			String readBack = new String(contents);
-						
-			if (!original.equals(readBack.substring(0, original.length()))) {
-				throw new TestException("Page content incorrect"); // Contents of dirty page are not propagated to disk.
-			}
-			bm.unpinPage(i, filename, false);
-		}
-	}
 
+		fs.readPage("testing", 3, p);
+		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+				1, 10)));
+		System.out.println();
+
+		fs.createFile("testagain", 7);
+		System.out.println(fs.allocatePages("testagain", 3));// pages 7,8,9
+		fs.writePage("testagain", 2, p);
+
+		fs.readPage("testagain", 1, p);
+		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+				1, 10)));
+		System.out.println();
+
+		fs.readPage("testagain", 2, p);
+		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+				1, 10)));
+		System.out.println();
+
+		// pages 1 and 2 of file testing are already deallocated by this time
+		try {
+			fs.readPage("testing", 1, p);
+		} catch (DBFileException e) {
+			System.out.println("Correctly caught unallocated page read.");
+			System.out.println(e.getMessage());
+		}
+
+		try {
+			fs.writePage("testing", 2, p);
+		} catch (DBFileException e) {
+			System.out.println("Correctly caught unallocated page write.");
+			System.out.println(e.getMessage());
+		}
+
+		System.out.println(fs.erase("testing")); // should print true
+		System.out.println(fs.erase("testagain")); // should print true
+		fs.listFiles();
+	}
 }

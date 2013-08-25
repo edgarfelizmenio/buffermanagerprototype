@@ -2,27 +2,28 @@ package buffermanager.database;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.page.Page;
 
-
 public class FileSystem {
 
 	private static final FileSystem instance = new FileSystem();
-	
-	private HashMap<String, File> directory;
-	
+
+	private Map<String, File> directory;
+
 	private FileSystem() {
 		this.directory = new HashMap<String, File>();
 	}
-	
+
 	public static synchronized FileSystem getInstance() {
 		return instance;
 	}
-	
+
 	public void createFile(String filename, int numPages) {
 		File file = new File(filename, numPages);
 		directory.put(filename, file);
@@ -60,8 +61,8 @@ public class FileSystem {
 		return runStart;
 	}
 
-	public void deallocatePages(String filename, int startPageNum,
-			int runSize) throws DBFileException, BadPageNumberException {
+	public void deallocatePages(String filename, int startPageNum, int runSize)
+			throws DBFileException, BadPageNumberException {
 		if (runSize <= 0) {
 			throw new DBFileException("Non positive run size.");
 		}
@@ -76,7 +77,7 @@ public class FileSystem {
 		}
 	}
 
-	public Page readPage(String filename, int pageNum)
+	public void readPage(String filename, int pageNum, Page page)
 			throws BadFileException, BadPageNumberException, DBFileException {
 		if (!directory.containsKey(filename)) {
 			throw new BadFileException();
@@ -92,7 +93,7 @@ public class FileSystem {
 			throw new DBFileException("Page not allocated");
 		}
 
-		return f.pages[pageNum].getCopy();
+		page.setContents(f.pages[pageNum].getContents());
 	}
 
 	public void writePage(String filename, int pageNum, Page page)
@@ -115,8 +116,18 @@ public class FileSystem {
 			throw new DBFileException("Page not allocated.");
 		}
 
-		f.pages[pageNum] = page.getCopy();
+		f.pages[pageNum].setContents(page.getContents());
 	}
-	
-	//TODO: main function for test stub
+
+	public void listFiles() {
+		System.out.println("Directory: ");
+		if (directory.isEmpty()) {
+			System.out.println("empty");
+		} else {
+			for (Entry<String, File> e : this.directory.entrySet()) {
+				System.out.println(e.getKey());
+				System.out.println(e.getValue());
+			}
+		}
+	}
 }

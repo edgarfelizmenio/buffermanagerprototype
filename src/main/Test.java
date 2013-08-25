@@ -10,5 +10,9 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 
 public interface Test {
-	public void execute(BufferManager bm, String filename) throws DBFileException, BadFileException, BadPageNumberException, TestException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException;
+	public void execute()
+			throws DBFileException, BadFileException, BadPageNumberException,
+			TestException, NoSuchMethodException, SecurityException,
+			IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchFieldException, InstantiationException, ClassNotFoundException;
 }
