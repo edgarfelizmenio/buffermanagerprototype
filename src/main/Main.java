@@ -11,6 +11,7 @@ import main.exceptions.TestException;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PageNotPinnedException;
 import buffermanager.exceptions.PagePinnedException;
 
 public class Main {
@@ -54,7 +55,8 @@ public class Main {
 					| InvocationTargetException | NoSuchFieldException
 					| InstantiationException | DBFileException
 					| BadFileException | BadPageNumberException
-					| PagePinnedException | TestException e) {
+					| PagePinnedException | PageNotPinnedException
+					| TestException e) {
 				System.out.println(c.getName() + " failed.");
 				e.printStackTrace();
 				System.out.println(e);

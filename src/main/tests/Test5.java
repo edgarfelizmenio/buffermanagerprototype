@@ -8,6 +8,7 @@ import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PageNotPinnedException;
 import main.Test;
 import main.exceptions.TestException;
 
@@ -23,7 +24,7 @@ public class Test5 implements Test {
 			SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, InstantiationException,
-			ClassNotFoundException {
+			ClassNotFoundException, PageNotPinnedException {
 
 		int poolSize = 25;
 		String filename = "test";

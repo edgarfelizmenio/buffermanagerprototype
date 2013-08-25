@@ -6,6 +6,7 @@ import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PageNotPinnedException;
 import buffermanager.exceptions.PagePinnedException;
 import buffermanager.page.Page;
 import buffermanager.policies.LRUPolicy;
@@ -78,9 +79,12 @@ public class BufferManager {
 		return frame;
 	}
 
-	public void unpinPage(int pageId, String filename, boolean dirty) {
+	public void unpinPage(int pageId, String filename, boolean dirty) throws PageNotPinnedException {
 		for (Frame f : bufferPool) {
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
+				if (f.getPinCount() == 0) {
+					throw new PageNotPinnedException("Unpinning page that is not unpinned!");
+				}
 				f.unpin();
 				f.setDirty(dirty);
 				policy.pageUnpinned(f);

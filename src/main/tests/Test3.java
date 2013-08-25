@@ -10,6 +10,7 @@ import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
+import buffermanager.exceptions.PageNotPinnedException;
 
 /**
  * Tests if the LRU replacement policy.
@@ -23,7 +24,7 @@ public class Test3 implements Test {
 			SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, InstantiationException,
-			ClassNotFoundException {
+			ClassNotFoundException, PageNotPinnedException {
 
 		int poolSize = 20;
 		String filename = "test";
