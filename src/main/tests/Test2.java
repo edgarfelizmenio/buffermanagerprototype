@@ -22,16 +22,34 @@ import buffermanager.page.Page;
 public class Test2 implements Test {
 
 	@Override
-	public void execute()
-			throws DBFileException, BadFileException, BadPageNumberException,
-			TestException, NoSuchMethodException, SecurityException,
-			IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchFieldException, InstantiationException, ClassNotFoundException {
+	public void execute() throws DBFileException, BadFileException,
+			BadPageNumberException, TestException, NoSuchMethodException,
+			SecurityException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException,
+			NoSuchFieldException, InstantiationException,
+			ClassNotFoundException {
+		String[] policies = { "LRUPolicy", "MRUPolicy", "ClockPolicy",
+				"RandomPolicy" };
 
+		for (String policy : policies) {
+			testPolicy(policy);
+		}
+
+	}
+
+	private void testPolicy(String policy) throws InstantiationException,
+			IllegalAccessException, IllegalArgumentException,
+			SecurityException, InvocationTargetException,
+			NoSuchMethodException, ClassNotFoundException, DBFileException,
+			BadFileException, BadPageNumberException, TestException,
+			NoSuchFieldException {
+		
 		int poolSize = 20;
 		String filename = "test";
 		FileSystem.getInstance().createFile(filename, 0);
-		BufferManager bm = new BufferManager(poolSize, "ClockPolicy");		
+		BufferManager bm = new BufferManager(poolSize, policy);
+
+		System.out.println("Testing " + policy + "...");
 		
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;
