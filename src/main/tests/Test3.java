@@ -53,19 +53,25 @@ public class Test3 implements Test {
 		}
 
 		// try pinning an extra page
-		f = bm.pinPage(bm.getPoolSize() + 6, filename);
+		f = bm.pinPage(bm.getPoolSize() + 7, filename);
 		if (f != null) {
 			throw new TestException("Pinned page in full buffer");
 		}
 
 		// Start unpinning pages in order.
 		for (int i = 0; i < bm.getPoolSize(); i++) {
+			int frameNumber = bm.findFrame(i + 5, filename);
+			
+			if (frameNumbers[i] != frameNumber) {
+				throw new TestException("Page pinned on wrong frame.");
+			}
+			
 			bm.unpinPage(i + 5, filename, true);
 			System.out.println("Page " + (i + 5) + " at frame "
 					+ frameNumbers[i] + " is unpinned.");
 		}
 
-		// Start pinning a new set of pages. The order of the pages frames
+		// Start pinning a new set of pages. The order of the frames
 		// should match the order of the frames that are pinned earlier.
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
 			f = bm.pinPage(i + 5, filename);
@@ -87,7 +93,6 @@ public class Test3 implements Test {
 			int frameNumber = bm.findFrame(i + 5, filename);
 			bm.unpinPage(i + 5, filename, true);
 			System.out.println("Page " + (i + 5) + " at frame " + frameNumber
-					+ " " + frameNumbers[i - bm.getPoolSize()]
 					+ " is unpinned.");
 		}
 
@@ -109,8 +114,6 @@ public class Test3 implements Test {
 			// unpin other pages - check if the page is still pinned
 			bm.unpinPage(i - 15, filename, false);
 		}
-
-		bm.flushPages();
 
 	}
 }

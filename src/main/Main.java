@@ -55,6 +55,7 @@ public class Main {
 					| BadFileException | BadPageNumberException | TestException e) {
 				System.out.println(c.getName() + " failed.");
 				e.printStackTrace();
+				System.out.println(e);
 			}
 			i++;
 		}

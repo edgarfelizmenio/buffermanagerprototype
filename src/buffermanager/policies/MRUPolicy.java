@@ -1,17 +1,18 @@
 package buffermanager.policies;
 
-import java.util.Stack;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import buffermanager.Frame;
 import buffermanager.Policy;
 
 public class MRUPolicy extends Policy {
 
-	private Stack<Frame> recentlyUsedFrames;
+	private Deque<Frame> recentlyUsedFrames;
 
 	public MRUPolicy(Frame[] bufferPool) {
 		super(bufferPool);
-		this.recentlyUsedFrames = new Stack<Frame>();
+		this.recentlyUsedFrames = new LinkedList<Frame>();
 	}
 
 	@Override
@@ -22,7 +23,7 @@ public class MRUPolicy extends Policy {
 			}
 		}
 
-		return recentlyUsedFrames.pop();
+		return recentlyUsedFrames.pollLast();
 	}
 
 	@Override
@@ -32,7 +33,7 @@ public class MRUPolicy extends Policy {
 
 	@Override
 	public void pageUnpinned(Frame f) {
-		recentlyUsedFrames.push(f);
+		recentlyUsedFrames.addLast(f);
 	}
 
 }
