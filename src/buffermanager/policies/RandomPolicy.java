@@ -2,6 +2,7 @@ package buffermanager.policies;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import buffermanager.Frame;
 import buffermanager.Policy;
@@ -9,12 +10,12 @@ import buffermanager.Policy;
 public class RandomPolicy extends Policy {
 
 	private List<Frame> usedFrames;
-	private java.util.Random random;
+	private Random random;
 
 	public RandomPolicy(Frame[] bufferPool) {
 		super(bufferPool);
 		this.usedFrames = new ArrayList<Frame>();
-		this.random = new java.util.Random();
+		this.random = new Random();
 	}
 
 	@Override
@@ -25,8 +26,9 @@ public class RandomPolicy extends Policy {
 			}
 		}
 
-		if (usedFrames != null) {
-			return usedFrames.remove(random.nextInt(bufferPool.length));
+		if (!usedFrames.isEmpty()) {
+			int index = random.nextInt(usedFrames.size());
+			return usedFrames.remove(index);
 		}
 		return null;
 	}

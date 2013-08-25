@@ -46,7 +46,7 @@ public class Test5 implements Test {
 
 			frameNumbers[i] = bm.findFrame(i + 5, filename);
 			if (frameNumbers[i] < 0 || frameNumbers[i] >= bm.getPoolSize()) {
-				throw new TestException("Invalid frame returned");
+				throw new TestException("Invalid frame returned.");
 			}
 
 			System.out.println("Page " + (i + 5) + " at frame "
