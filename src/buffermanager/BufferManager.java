@@ -83,14 +83,16 @@ public class BufferManager {
 		for (Frame f : bufferPool) {
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
 				if (f.getPinCount() == 0) {
-					throw new PageNotPinnedException("Unpinning page that is not unpinned!");
+					throw new PageNotPinnedException("Unpinning page that is not pinned!");
 				}
 				f.unpin();
 				f.setDirty(dirty);
 				policy.pageUnpinned(f);
-				break;
+				return;
 			}
 		}
+		
+		throw new PageNotPinnedException("Unpinning a nonexistent page!");
 	}
 
 	public Frame newPage(int numPages, String filename) throws DBFileException,
