@@ -1,10 +1,11 @@
-package buffermanager.policies;
+package dbms.buffermanager.policies;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
-import buffermanager.Frame;
-import buffermanager.Policy;
+import dbms.buffermanager.Frame;
+import dbms.buffermanager.Policy;
+
 
 public class MRUPolicy extends Policy {
 

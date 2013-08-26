@@ -2,15 +2,15 @@ package main.tests;
 
 import java.lang.reflect.InvocationTargetException;
 
-import buffermanager.BufferManager;
-import buffermanager.Frame;
-import buffermanager.database.FileSystem;
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
-import buffermanager.exceptions.PageNotPinnedException;
-import buffermanager.exceptions.PagePinnedException;
-import buffermanager.page.Page;
+import dbms.buffermanager.BufferManager;
+import dbms.buffermanager.exceptions.PageNotPinnedException;
+import dbms.buffermanager.exceptions.PagePinnedException;
+import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+import dbms.diskspacemanager.page.Page;
+
 import main.Test;
 import main.exceptions.TestException;
 
@@ -40,7 +40,6 @@ public class Test10 implements Test {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void testPolicy(String policy) throws InstantiationException,
 			IllegalAccessException, IllegalArgumentException,
 			SecurityException, InvocationTargetException,
@@ -65,7 +64,12 @@ public class Test10 implements Test {
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
-			System.out.println("after pinPage " + i);
+			System.out.println("After pinPage " + i);
+			char[] data = ("This is test 10 for page " + i).toCharArray();
+			p.setContents(data);
+			bm.flushPage(filename,i);
+			System.out.println("After flushPage " + i);
+			bm.unpinPage(i, filename, true);
 		}
 	}
 

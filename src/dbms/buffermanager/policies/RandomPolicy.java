@@ -1,11 +1,12 @@
-package buffermanager.policies;
+package dbms.buffermanager.policies;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import buffermanager.Frame;
-import buffermanager.Policy;
+import dbms.buffermanager.Frame;
+import dbms.buffermanager.Policy;
+
 
 public class RandomPolicy extends Policy {
 

@@ -2,9 +2,10 @@ package main.tests;
 
 import java.lang.reflect.InvocationTargetException;
 
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+
 import main.Test;
 import main.exceptions.TestException;
 

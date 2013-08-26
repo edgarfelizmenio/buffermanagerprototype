@@ -1,4 +1,4 @@
-package buffermanager.exceptions;
+package dbms.buffermanager.exceptions;
 
 public class PagePinnedException extends Exception {
 	

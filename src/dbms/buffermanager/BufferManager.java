@@ -1,15 +1,16 @@
-package buffermanager;
+package dbms.buffermanager;
 
 import java.lang.reflect.InvocationTargetException;
 
-import buffermanager.database.FileSystem;
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
-import buffermanager.exceptions.PageNotPinnedException;
-import buffermanager.exceptions.PagePinnedException;
-import buffermanager.page.Page;
-import buffermanager.policies.LRUPolicy;
+import dbms.buffermanager.exceptions.PageNotPinnedException;
+import dbms.buffermanager.exceptions.PagePinnedException;
+import dbms.buffermanager.policies.LRUPolicy;
+import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+import dbms.diskspacemanager.page.Page;
+
 
 public class BufferManager {
 	public static int DEFAULT_BUFFER_SIZE = 10;

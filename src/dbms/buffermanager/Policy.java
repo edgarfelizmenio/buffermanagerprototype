@@ -1,4 +1,4 @@
-package buffermanager;
+package dbms.buffermanager;
 
 public abstract class Policy {
 	protected Frame[] bufferPool;

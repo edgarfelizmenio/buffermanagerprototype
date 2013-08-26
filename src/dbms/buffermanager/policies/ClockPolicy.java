@@ -1,9 +1,10 @@
-package buffermanager.policies;
+package dbms.buffermanager.policies;
 
 import java.util.HashMap;
 
-import buffermanager.Frame;
-import buffermanager.Policy;
+import dbms.buffermanager.Frame;
+import dbms.buffermanager.Policy;
+
 
 public class ClockPolicy extends Policy {
 

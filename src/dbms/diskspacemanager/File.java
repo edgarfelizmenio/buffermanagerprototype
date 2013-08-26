@@ -1,8 +1,9 @@
-package buffermanager.database;
+package dbms.diskspacemanager;
 
 import java.util.Arrays;
 
-import buffermanager.page.Page;
+import dbms.diskspacemanager.page.Page;
+
 
 class File {
 	Page[] pages;

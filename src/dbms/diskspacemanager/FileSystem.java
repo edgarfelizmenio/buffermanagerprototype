@@ -1,14 +1,15 @@
-package buffermanager.database;
+package dbms.diskspacemanager;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
-import buffermanager.page.Page;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+import dbms.diskspacemanager.page.Page;
+
 
 public class FileSystem {
 

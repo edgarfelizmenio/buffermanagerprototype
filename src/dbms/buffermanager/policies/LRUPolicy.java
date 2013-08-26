@@ -1,10 +1,11 @@
-package buffermanager.policies;
+package dbms.buffermanager.policies;
 
-import buffermanager.Policy;
-import buffermanager.Frame;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+import dbms.buffermanager.Frame;
+import dbms.buffermanager.Policy;
 
 public class LRUPolicy extends Policy {
 

@@ -1,6 +1,6 @@
-package buffermanager;
+package dbms.buffermanager;
 
-import buffermanager.page.Page;
+import dbms.diskspacemanager.page.Page;
 
 public class Frame {
 	private String filename;

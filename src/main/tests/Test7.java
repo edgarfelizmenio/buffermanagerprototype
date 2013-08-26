@@ -4,17 +4,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+import dbms.buffermanager.BufferManager;
+import dbms.buffermanager.Frame;
+import dbms.buffermanager.exceptions.PageNotPinnedException;
+import dbms.buffermanager.exceptions.PagePinnedException;
+import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+import dbms.diskspacemanager.page.Page;
+
 import main.Test;
 import main.exceptions.TestException;
-import buffermanager.BufferManager;
-import buffermanager.Frame;
-import buffermanager.database.FileSystem;
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
-import buffermanager.exceptions.PageNotPinnedException;
-import buffermanager.exceptions.PagePinnedException;
-import buffermanager.page.Page;
 
 public class Test7 implements Test {
 

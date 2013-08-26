@@ -1,4 +1,4 @@
-package buffermanager.database.exceptions;
+package dbms.diskspacemanager.exceptions;
 
 public class BadPageNumberException extends Exception {
 

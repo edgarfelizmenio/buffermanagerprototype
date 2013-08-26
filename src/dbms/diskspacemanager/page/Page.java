@@ -1,4 +1,4 @@
-package buffermanager.page;
+package dbms.diskspacemanager.page;
 
 import java.util.Arrays;
 

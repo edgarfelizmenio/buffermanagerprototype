@@ -7,18 +7,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import dbms.buffermanager.exceptions.PageNotPinnedException;
+import dbms.buffermanager.exceptions.PagePinnedException;
+import dbms.diskspacemanager.exceptions.BadFileException;
+import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.DBFileException;
+
 import main.exceptions.TestException;
-import buffermanager.database.exceptions.BadFileException;
-import buffermanager.database.exceptions.BadPageNumberException;
-import buffermanager.database.exceptions.DBFileException;
-import buffermanager.exceptions.PageNotPinnedException;
-import buffermanager.exceptions.PagePinnedException;
 
 public class Main {
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws URISyntaxException,
 			ClassNotFoundException {
-		int poolSize = 20;
 
 		String packagename = "main.tests";
 		String path = packagename.replace('.', '/');
@@ -42,12 +42,11 @@ public class Main {
 			tests.add((Class<Test>) Class.forName(className));
 		}
 
-		int i = 1;
 		for (Class<Test> c : tests) {
 			Test t;
 			try {
 				System.out.println("Start of " + c.getName());
-				t = c.getConstructor(null).newInstance();
+				t = c.getConstructor((Class<?>)null).newInstance();
 				t.execute();
 				System.out.println(c.getName() + " passed.\n");
 			} catch (NoSuchMethodException | SecurityException
@@ -61,7 +60,6 @@ public class Main {
 				e.printStackTrace();
 				System.out.println(e);
 			}
-			i++;
 		}
 
 	}
