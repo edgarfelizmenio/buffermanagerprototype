@@ -4,15 +4,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
+import main.Test;
+import main.exceptions.TestException;
 import buffermanager.BufferManager;
-import buffermanager.Frame;
 import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PageNotPinnedException;
-import main.Test;
-import main.exceptions.TestException;
+import buffermanager.page.Page;
 
 public class Test6 implements Test {
 
@@ -32,13 +32,13 @@ public class Test6 implements Test {
 		bm.newPage(bm.getPoolSize() * 6, filename);
 		bm.unpinPage(0, filename, false);
 
-		Frame f;
+		Page p;
 
 		// use all frames
 		Set<Integer> frameNumbers = new HashSet<Integer>();
 
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 6, filename);
+			p = bm.pinPage(i + 6, filename);
 
 			int frameNumber = bm.findFrame(i + 6, filename);
 
@@ -52,8 +52,8 @@ public class Test6 implements Test {
 		}
 
 		// try pinning an extra page
-		f = bm.pinPage(bm.getPoolSize() * 2, filename);
-		if (f != null) {
+		p = bm.pinPage(bm.getPoolSize() * 2, filename);
+		if (p != null) {
 			throw new TestException("Pinned page in full buffer.");
 		}
 
@@ -73,8 +73,8 @@ public class Test6 implements Test {
 
 		// pin a new set of pages
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 6, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 6, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 			int frameNumber = bm.findFrame(i + 6, filename);
@@ -104,8 +104,8 @@ public class Test6 implements Test {
 
 		// pin another set of pages
 		for (int i = 2 * bm.getPoolSize(); i < 2 * bm.getPoolSize() + 5; i++) {
-			f = bm.pinPage(i + 7, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 7, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 			int frameNumber = bm.findFrame(i + 7, filename);

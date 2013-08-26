@@ -13,6 +13,7 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PageNotPinnedException;
 import buffermanager.exceptions.PagePinnedException;
+import buffermanager.page.Page;
 
 /**
  * Tests if the following cases are handled properly:
@@ -67,11 +68,11 @@ public class Test9 implements Test {
 
 		// Allocate 10 pages to database
 		for (int i = 0; i < 10; i++) {
-			Frame f = bm.newPage(1, filename);
-			if (f == null) {
+			int pageNumber = bm.newPage(1, filename);
+			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("newPage failed");
 			}
-			pageIds[i] = pageNumField.getInt(f);
+			pageIds[i] = pageNumber;
 		}
 
 		System.out.println("Allocated 10 pages successful");
@@ -96,9 +97,9 @@ public class Test9 implements Test {
 
 		// Pin a nonexistent page
 		success = true;
-		Frame f;
+		Page p;
 		try {
-			f = bm.pinPage(999, filename);
+			p = bm.pinPage(999, filename);
 		} catch (BadPageNumberException bpne) {
 			success = false;
 		}
@@ -125,8 +126,8 @@ public class Test9 implements Test {
 				.println("Unpinning of a non-existent page failed (as it should)");
 
 		// Free a page that is still pinned
-		f = bm.pinPage(pageIds[0], filename);
-		if (f == null) {
+		p = bm.pinPage(pageIds[0], filename);
+		if (p == null) {
 			throw new TestException("Unable to pin page!");
 		}
 		System.out.println("Pinning of page successful");
@@ -154,17 +155,17 @@ public class Test9 implements Test {
 		
 		// Fill up buffer with pinned pages
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			f = bm.newPage(1, filename);
-			if (f == null) {
+			int pageNumber = bm.newPage(1, filename);
+			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("newPage failed");
 			}
-			pageIds[i] = pageNumField.getInt(f);
+			pageIds[i] = pageNumber;
 		}
 		System.out.println("Allocate pages successful");
 
 		// Try to pin one more page
-		f = bm.newPage(1, filename);
-		if (f != null) {
+		int pageNumber = bm.newPage(1, filename);
+		if (pageNumber != Page.NO_PAGE_NUMBER) {
 			throw new TestException("Pinning a page in a full buffer succeeded!");
 		}
 		System.out.println("Pinning a page in a full buffer failed (as it should)");

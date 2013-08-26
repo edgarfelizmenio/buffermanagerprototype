@@ -5,12 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import main.Test;
 import main.exceptions.TestException;
 import buffermanager.BufferManager;
-import buffermanager.Frame;
 import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PageNotPinnedException;
+import buffermanager.page.Page;
 
 /**
  * Tests if the LRU replacement policy.
@@ -31,16 +31,16 @@ public class Test3 implements Test {
 		FileSystem.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, "LRUPolicy");
 
-		Frame f;
+		int pageNumber;
 		// allocate some pages
-		f = bm.newPage(5 * bm.getPoolSize(), filename);
-		bm.unpinPage(0, filename, false);
+		pageNumber = bm.newPage(5 * bm.getPoolSize(), filename);
+		bm.unpinPage(pageNumber, filename, false);
 
 		int[] frameNumbers = new int[bm.getPoolSize()];
 
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			Page p= bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
 
@@ -54,8 +54,8 @@ public class Test3 implements Test {
 		}
 
 		// try pinning an extra page
-		f = bm.pinPage(bm.getPoolSize() + 7, filename);
-		if (f != null) {
+		Page p = bm.pinPage(bm.getPoolSize() + 7, filename);
+		if (p != null) {
 			throw new TestException("Pinned page in full buffer");
 		}
 
@@ -75,8 +75,8 @@ public class Test3 implements Test {
 		// Start pinning a new set of pages. The order of the frames
 		// should match the order of the frames that are pinned earlier.
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 
@@ -100,8 +100,8 @@ public class Test3 implements Test {
 		// Pin a new set of pages. The order of the page frames should match the
 		// order of the frames that are pinned earlier in reverse order.
 		for (int i = 2 * bm.getPoolSize(); i < 3 * bm.getPoolSize(); i += 2) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 			int frameNumber = bm.findFrame(i + 5, filename);

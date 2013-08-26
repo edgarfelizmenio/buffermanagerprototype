@@ -1,12 +1,10 @@
 package main.tests;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import main.Test;
 import main.exceptions.TestException;
 import buffermanager.BufferManager;
-import buffermanager.Frame;
 import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
@@ -38,7 +36,6 @@ public class Test8 implements Test {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void testPolicy(String policy) throws InstantiationException,
 			IllegalAccessException, IllegalArgumentException,
 			SecurityException, InvocationTargetException,
@@ -54,45 +51,33 @@ public class Test8 implements Test {
 		System.out.println("Testing " + policy + "...");
 
 		char[] data = "This page is dirty!".toCharArray();
+		
+		int pageNumber = bm.newPage(1, filename);
 
-		Frame f = bm.newPage(1, filename);
-
-		if (f == null) {
+		if (pageNumber == Page.NO_PAGE_NUMBER) {
 			throw new TestException("newPage failed!");
 		}
 
-		ClassLoader cl = Test8.class.getClassLoader();
-		Class<Frame> frameClass = (Class<Frame>) cl.loadClass(Frame.class
-				.getName());
-		Field pageNumField = frameClass.getDeclaredField("pageNum");
-		Field pageField = frameClass.getDeclaredField("page");
-		
-		pageNumField.setAccessible(true);
-		pageField.setAccessible(true);
-		
-		int pageId = pageNumField.getInt(f);
-		Page page = (Page) pageField.get(f);
+		Page page = bm.findPage(pageNumber, filename);
 
 		System.out.println("newPage successful");
 
 		// Dirty page
 		page.setContents(data);
-		bm.unpinPage(pageId, filename, true);
+		bm.unpinPage(pageNumber, filename, true);
 		System.out.println("Unpinning of page successful");
 		bm.flushPages();
 
 		// Create a new buffer manager to see if it can handle it
 		bm = new BufferManager(poolSize, policy);
-		f = bm.pinPage(pageId, filename);
-		if (f == null) {
+		Page p = bm.pinPage(pageNumber, filename);
+		if (p == null) {
 			throw new TestException("Pinning of page failed!");
 		}
 
 		System.out.println("Pinning of page successful");
 
-		page = (Page) pageField.get(f);
-
-		if (!(new String(data).equals(new String(page.getContents()).substring(0, data.length)))) {
+		if (!(new String(data).equals(new String(p.getContents()).substring(0, data.length)))) {
 			throw new TestException("Dirtied page not written to disk!");
 		}
 		System.out.println("Dirtied page written to disk");

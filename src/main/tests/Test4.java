@@ -2,15 +2,15 @@ package main.tests;
 
 import java.lang.reflect.InvocationTargetException;
 
+import main.Test;
+import main.exceptions.TestException;
 import buffermanager.BufferManager;
-import buffermanager.Frame;
 import buffermanager.database.FileSystem;
 import buffermanager.database.exceptions.BadFileException;
 import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PageNotPinnedException;
-import main.Test;
-import main.exceptions.TestException;
+import buffermanager.page.Page;
 
 /**
  * Tests the clock replacement policy.
@@ -23,24 +23,25 @@ public class Test4 implements Test {
 			BadPageNumberException, TestException, NoSuchMethodException,
 			SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
-			NoSuchFieldException, InstantiationException, ClassNotFoundException, PageNotPinnedException {
+			NoSuchFieldException, InstantiationException,
+			ClassNotFoundException, PageNotPinnedException {
 
 		int poolSize = 20;
 		String filename = "test";
 		FileSystem.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, "ClockPolicy");
 
-		Frame f;
+		int pageNumber;
 
 		// allocate some pages
-		f = bm.newPage(5 * bm.getPoolSize(), filename);
-		bm.unpinPage(0, filename, false);
+		pageNumber = bm.newPage(5 * bm.getPoolSize(), filename);
+		bm.unpinPage(pageNumber, filename, false);
 
 		int[] frameNumbers = new int[bm.getPoolSize()];
 
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			Page p = bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
 
@@ -54,8 +55,8 @@ public class Test4 implements Test {
 		}
 
 		// try pinning an extra page
-		f = bm.pinPage(bm.getPoolSize() + 6, filename);
-		if (f != null) {
+		Page p = bm.pinPage(bm.getPoolSize() + 6, filename);
+		if (p != null) {
 			throw new TestException("Pinned page in full buffer");
 		}
 
@@ -70,8 +71,8 @@ public class Test4 implements Test {
 		// exactly the same order as the previous one. Clock in that case will
 		// resemble MRU.
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
 
@@ -94,8 +95,8 @@ public class Test4 implements Test {
 		// Now, pin a new set of pages. Again, it should resemble the previous
 		// sequence. In this case, Clock behaves as LRU
 		for (int i = 2 * bm.getPoolSize(); i < 3 * bm.getPoolSize(); i += 2) {
-			f = bm.pinPage(i + 5, filename);
-			if (f == null) {
+			p = bm.pinPage(i + 5, filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
 

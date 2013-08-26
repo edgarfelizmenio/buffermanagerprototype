@@ -14,6 +14,7 @@ import buffermanager.database.exceptions.BadPageNumberException;
 import buffermanager.database.exceptions.DBFileException;
 import buffermanager.exceptions.PageNotPinnedException;
 import buffermanager.exceptions.PagePinnedException;
+import buffermanager.page.Page;
 
 public class Test7 implements Test {
 
@@ -50,10 +51,10 @@ public class Test7 implements Test {
 		System.out.println("Testing " + policy + "...");
 
 		int[] pageIds = new int[30];
-		Frame[] frames = new Frame[30];
+		Page[] pages = new Page[30];
 
 		Arrays.fill(pageIds, 0);
-		Arrays.fill(frames, null);
+		Arrays.fill(pages, null);
 
 		ClassLoader cl = Test7.class.getClassLoader();
 
@@ -65,25 +66,25 @@ public class Test7 implements Test {
 
 		// Allocate 10 pages from database
 		for (int i = 0; i < 10; i++) {
-			Frame f = bm.newPage(1, filename);
-			if (f == null) {
+			int pageNumber = bm.newPage(1, filename);
+			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("BufferManager.newPage failed!");
 			}
-			pageIds[i] = pageIdField.getInt(f);
-			frames[i] = f;
+			pageIds[i] = pageNumber;
+			pages[i] = bm.findPage(pageNumber, filename);
 		}
 
 		// Pin first 10 pages a second time
 		for (int i = 0; i < 10; i++) {
 			System.out.println("Pinning page " + i + " " + pageIds[i]);
-			Frame f = bm.pinPage(pageIds[i], filename);
-			if (f == null) {
+			Page p = bm.pinPage(pageIds[i], filename);
+			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
 
 			// Checking pointers: after pinning once (with newPage), and pinning
 			// again, pointers should be the same.
-			if (f != frames[i]) {
+			if (p != pages[i]) {
 				throw new TestException("Error in pinning for the 2nd time.");
 			}
 		}
@@ -113,12 +114,11 @@ public class Test7 implements Test {
 
 		// Get 14 more pages
 		for (int i = 10; i < 24; i++) {
-			Frame f = bm.newPage(1, filename);
-			if (f == null) {
+			int pageNumber = bm.newPage(1, filename);
+			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("BufferManager.newPage failed!");
 			}
-			int pageId = pageIdField.getInt(f);
-			System.out.println("New page " + i + "," + pageId);
+			System.out.println("New page " + i + "," + pageNumber);
 		}
 
 	}

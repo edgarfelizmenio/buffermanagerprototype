@@ -34,7 +34,7 @@ public class BufferManager {
 		loadPolicy(policy);
 	}
 
-	public Frame pinPage(int pageId, String filename) throws BadFileException,
+	public Page pinPage(int pageId, String filename) throws BadFileException,
 			BadPageNumberException, DBFileException {
 		Frame frame = null;
 
@@ -68,22 +68,26 @@ public class BufferManager {
 				// read requested page into replacement frame
 				Page p = Page.makePage();
 				FileSystem.getInstance().readPage(filename, pageId, p);
-				
+
 				frame.setPage(filename, pageId, p);
 				policy.pagePinned(frame);
 			}
 		}
 
 		// return null if frame is null
-
-		return frame;
+		if (frame == null) {
+			return null;
+		}
+		return frame.getPage();
 	}
 
-	public void unpinPage(int pageId, String filename, boolean dirty) throws PageNotPinnedException {
+	public void unpinPage(int pageId, String filename, boolean dirty)
+			throws PageNotPinnedException {
 		for (Frame f : bufferPool) {
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
 				if (f.getPinCount() == 0) {
-					throw new PageNotPinnedException("Unpinning page that is not pinned!");
+					throw new PageNotPinnedException(
+							"Unpinning page that is not pinned!");
 				}
 				f.unpin();
 				f.setDirty(dirty);
@@ -91,21 +95,44 @@ public class BufferManager {
 				return;
 			}
 		}
-		
+
 		throw new PageNotPinnedException("Unpinning a nonexistent page!");
 	}
 
-	public Frame newPage(int numPages, String filename) throws DBFileException,
+	public int newPage(int numPages, String filename) throws DBFileException,
 			BadFileException, BadPageNumberException {
-		int pageId = FileSystem.getInstance().allocatePages(filename, numPages);
-		Frame f = this.pinPage(pageId, filename);
 
-		if (f == null) {
-			FileSystem.getInstance()
-					.deallocatePages(filename, pageId, numPages);
+		// find a frame in the buffer pool
+		Frame frame = policy.chooseFrame();
+
+		if (frame != null) {
+			// if the buffer pool is not full, allocate pages and and pin the first page on the free frame
+			int pageId = FileSystem.getInstance().allocatePages(filename,
+					numPages);
+
+			frame.pin(filename, pageId);
+
+			// write the page that the frame contains if the dirty bit for
+			// replacement is on
+			if (frame.isDirty()) {
+				frame.setDirty(false);
+				FileSystem.getInstance().writePage(frame.getFilename(),
+						frame.getPageNum(), frame.getPage());
+			}
+
+			// read requested page into replacement frame
+			Page p = Page.makePage();
+			FileSystem.getInstance().readPage(filename, pageId, p);
+
+			frame.setPage(filename, pageId, p);
+			policy.pagePinned(frame);
 		}
 
-		return f;
+		// return null if frame is null
+		if (frame == null) {
+			return Page.NO_PAGE_NUMBER;
+		}
+		return frame.getPageNum();
 	}
 
 	public void freePage(String filename, int pageId)
@@ -146,6 +173,17 @@ public class BufferManager {
 			}
 		}
 	}
+	
+	public Page findPage(int pageId, String filename) {
+		for (int i = 0; i < bufferPool.length; i++) {
+			if ((!bufferPool[i].isFree())
+					&& (bufferPool[i].getFilename() == filename && bufferPool[i]
+							.getPageNum() == pageId)) {
+				return bufferPool[i].getPage();
+			}
+		}
+		return null;
+	}
 
 	public int findFrame(int pageId, String filename) {
 		for (int i = 0; i < bufferPool.length; i++) {
@@ -161,7 +199,7 @@ public class BufferManager {
 	public int getPoolSize() {
 		return bufferPool.length;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void loadPolicy(String policy) throws ClassNotFoundException,
 			InstantiationException, IllegalAccessException,
