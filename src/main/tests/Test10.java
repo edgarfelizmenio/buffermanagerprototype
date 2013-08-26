@@ -71,6 +71,34 @@ public class Test10 implements Test {
 			System.out.println("After flushPage " + i);
 			bm.unpinPage(i, filename, true);
 		}
+		
+		for (int i = 0; i < 13; i++) {
+			p =bm.pinPage(i, filename);
+			if (p == null) {
+				throw new TestException("Pinning page failed!");
+			}
+			String readBack = new String(p.getContents());
+			String orig = "This is test 10 for page " + i;
+			
+			System.out.println("PAGE[ " + i + " ]: " + readBack.substring(0,orig.length()));
+			if (!readBack.substring(0, orig.length()).equals(orig)) {
+				throw new TestException("Page content incorrect!");
+			}
+			bm.unpinPage(i, filename, false);
+		}
+		
+		// Try to pin a page in a different file
+		boolean success = false;
+		try {
+			p = bm.pinPage(1, filename + "bheb");
+		} catch(BadFileException bfe) {
+			System.out.println("Successfully caught pinning wrong file");
+			success = true;
+		}
+		
+		if (!success) {
+			throw new TestException("Pinned wrong file!");
+		}
 	}
 
 }

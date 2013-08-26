@@ -46,7 +46,7 @@ public class Main {
 			Test t;
 			try {
 				System.out.println("Start of " + c.getName());
-				t = c.getConstructor((Class<?>)null).newInstance();
+				t = c.getConstructor().newInstance();
 				t.execute();
 				System.out.println(c.getName() + " passed.\n");
 			} catch (NoSuchMethodException | SecurityException
