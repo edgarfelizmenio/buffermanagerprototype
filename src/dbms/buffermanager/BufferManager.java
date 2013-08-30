@@ -210,7 +210,7 @@ public class BufferManager {
 		ClassLoader loader = BufferManager.class.getClassLoader();
 		try {
 			Class<Policy> policyClass = (Class<Policy>) loader
-					.loadClass("buffermanager.policies." + policy);
+					.loadClass("dbms.buffermanager.policies." + policy);
 			;
 			this.policy = policyClass.getConstructor(Frame[].class)
 					.newInstance((Object) bufferPool);

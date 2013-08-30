@@ -1,19 +1,10 @@
 package main;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import dbms.buffermanager.exceptions.PageNotPinnedException;
-import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.exceptions.BadFileException;
-import dbms.diskspacemanager.exceptions.BadPageNumberException;
-import dbms.diskspacemanager.exceptions.DBFileException;
-
-import main.exceptions.TestException;
 
 public class Main {
 	@SuppressWarnings("unchecked")
@@ -46,16 +37,10 @@ public class Main {
 			Test t;
 			try {
 				System.out.println("Start of " + c.getName());
-				t = c.getConstructor((Class<?>)null).newInstance();
+				t = c.newInstance();
 				t.execute();
 				System.out.println(c.getName() + " passed.\n");
-			} catch (NoSuchMethodException | SecurityException
-					| IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchFieldException
-					| InstantiationException | DBFileException
-					| BadFileException | BadPageNumberException
-					| PagePinnedException | PageNotPinnedException
-					| TestException e) {
+			} catch (Exception e) {
 				System.out.println(c.getName() + " failed.");
 				e.printStackTrace();
 				System.out.println(e);
