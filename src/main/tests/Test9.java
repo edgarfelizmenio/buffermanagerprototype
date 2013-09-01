@@ -7,7 +7,7 @@ import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.Frame;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -53,7 +53,7 @@ public class Test9 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
@@ -68,7 +68,7 @@ public class Test9 implements Test {
 
 		// Allocate 10 pages to database
 		for (int i = 0; i < 10; i++) {
-			int pageNumber = bm.newPage(1, filename);
+			int pageNumber = bm.newPage(filename, 1);
 			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("newPage failed");
 			}
@@ -78,13 +78,13 @@ public class Test9 implements Test {
 		System.out.println("Allocated 10 pages successful");
 
 		// Try to unpin a pinned page twice
-		bm.unpinPage(pageIds[0], filename, false);
+		bm.unpinPage(filename, pageIds[0], false);
 		System.out.println("Unpinning of a pinned page successful");
 
 		// Try to unpin an unpinned page
 		boolean success = true;
 		try {
-			bm.unpinPage(pageIds[0], filename, false);
+			bm.unpinPage(filename, pageIds[0], false);
 		} catch (PageNotPinnedException pnpe) {
 			success = false;
 		}
@@ -99,7 +99,7 @@ public class Test9 implements Test {
 		success = true;
 		Page p;
 		try {
-			p = bm.pinPage(999, filename);
+			p = bm.pinPage(filename, 999);
 		} catch (BadPageNumberException bpne) {
 			success = false;
 		}
@@ -113,7 +113,7 @@ public class Test9 implements Test {
 		// Unpin a nonexistent page
 		success = true;
 		try {
-			bm.unpinPage(999, filename, false);
+			bm.unpinPage(filename, 999, false);
 		} catch (PageNotPinnedException pnpe) {
 			success = false;
 		}
@@ -126,7 +126,7 @@ public class Test9 implements Test {
 				.println("Unpinning of a non-existent page failed (as it should)");
 
 		// Free a page that is still pinned
-		p = bm.pinPage(pageIds[0], filename);
+		p = bm.pinPage(filename, pageIds[0]);
 		if (p == null) {
 			throw new TestException("Unable to pin page!");
 		}
@@ -145,7 +145,7 @@ public class Test9 implements Test {
 		
 		// Free all allocated pages
 		for (int i = 0; i < 10; i++) {
-			bm.unpinPage(pageIds[i], filename,false);
+			bm.unpinPage(filename, pageIds[i],false);
 			bm.freePage(filename, pageIds[i]);
 		}
 		System.out.println("Freeing allocated pages successful");
@@ -155,7 +155,7 @@ public class Test9 implements Test {
 		
 		// Fill up buffer with pinned pages
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			int pageNumber = bm.newPage(1, filename);
+			int pageNumber = bm.newPage(filename, 1);
 			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("newPage failed");
 			}
@@ -164,7 +164,7 @@ public class Test9 implements Test {
 		System.out.println("Allocate pages successful");
 
 		// Try to pin one more page
-		int pageNumber = bm.newPage(1, filename);
+		int pageNumber = bm.newPage(filename, 1);
 		if (pageNumber != Page.NO_PAGE_NUMBER) {
 			throw new TestException("Pinning a page in a full buffer succeeded!");
 		}
@@ -172,7 +172,7 @@ public class Test9 implements Test {
 	
 		// Free all allocated pages
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			bm.unpinPage(pageIds[i], filename, false);
+			bm.unpinPage(filename, pageIds[i], false);
 			bm.freePage(filename, pageIds[i]);
 		}
 		System.out.println("Freeing allocated pages successful");

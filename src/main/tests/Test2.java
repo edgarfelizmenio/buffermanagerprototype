@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -45,7 +45,7 @@ public class Test2 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
@@ -53,12 +53,12 @@ public class Test2 implements Test {
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;
 
-		bm.newPage(last + 10, filename);
-		bm.unpinPage(0, filename, false);
+		bm.newPage(filename, last + 10);
+		bm.unpinPage(filename, 0, false);
 
 		// Pin the pages and modify the contents
 		for (int i = first; i <= last; i++) {
-			Page p = bm.pinPage(i, filename);
+			Page p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Unable to pin page 1st time");
 			}
@@ -69,7 +69,7 @@ public class Test2 implements Test {
 
 			p.setContents(data);
 
-			bm.unpinPage(i, filename, true);
+			bm.unpinPage(filename, i, true);
 
 			System.out.println("After unpin page " + i);
 		}
@@ -78,7 +78,7 @@ public class Test2 implements Test {
 
 		// Check if the contents of a dirty page are written to disk
 		for (int i = first; i <= last; i++) {
-			Page p = bm.pinPage(i, filename);
+			Page p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Unable to pin page the 2nd time");
 			}
@@ -98,7 +98,7 @@ public class Test2 implements Test {
 																	// propagated
 																	// to disk.
 			}
-			bm.unpinPage(i, filename, false);
+			bm.unpinPage(filename, i, false);
 		}
 	}
 

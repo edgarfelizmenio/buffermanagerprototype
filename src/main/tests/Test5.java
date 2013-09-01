@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -28,24 +28,24 @@ public class Test5 implements Test {
 
 		int poolSize = 25;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, "MRUPolicy");
 
 		int pageNumber;
 		// allocate some pages
-		pageNumber = bm.newPage(5 * bm.getPoolSize(), filename);
-		bm.unpinPage(pageNumber, filename, false);
+		pageNumber = bm.newPage(filename, 5 * bm.getPoolSize());
+		bm.unpinPage(filename, pageNumber, false);
 
 		int[] frameNumbers = new int[bm.getPoolSize()];
 
 		// fill the buffer pool
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			Page p = bm.pinPage(i + 5, filename);
+			Page p = bm.pinPage(filename, i + 5);
 			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 
-			frameNumbers[i] = bm.findFrame(i + 5, filename);
+			frameNumbers[i] = bm.findFrame(filename, i + 5);
 			if (frameNumbers[i] < 0 || frameNumbers[i] >= bm.getPoolSize()) {
 				throw new TestException("Invalid frame returned.");
 			}
@@ -55,14 +55,14 @@ public class Test5 implements Test {
 		}
 
 		// try pinning an extra page
-		Page p = bm.pinPage(bm.getPoolSize() * 3, filename);
+		Page p = bm.pinPage(filename, bm.getPoolSize() * 3);
 		if (p != null) {
 			throw new TestException("Pinned page in full buffer.");
 		}
 
 		// Start unpinning pages in order.
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			bm.unpinPage(i + 5, filename, true);
+			bm.unpinPage(filename, i + 5, true);
 			System.out.println("Page " + (i + 5) + " at frame "
 					+ frameNumbers[i] + " is unpinned.");
 		}
@@ -71,12 +71,12 @@ public class Test5 implements Test {
 		// should match the order of the frames that are pinned earlier in
 		// reverse order.
 		for (int i = bm.getPoolSize(); i < bm.getPoolSize() * 2; i++) {
-			p = bm.pinPage(i + 5, filename);
+			p = bm.pinPage(filename, i + 5);
 			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 
-			int frameNumber = bm.findFrame(i + 5, filename);
+			int frameNumber = bm.findFrame(filename, i + 5);
 			System.out.println("Page " + (i + 5) + " pinned in frame "
 					+ frameNumber + ".");
 
@@ -91,23 +91,23 @@ public class Test5 implements Test {
 			int start = (i % 2 == 0) ? bm.getPoolSize() + 5 + (i / 2) : 2
 					* bm.getPoolSize() + 5 - ((i + 1) / 2);
 			for (int j = start, k = 0; k < 5; j += step, k++) {
-				int fn = bm.findFrame(j, filename);
+				int fn = bm.findFrame(filename, j);
 				if (fn != frameNumbers[2 * bm.getPoolSize() - j + 4]) {
 					throw new TestException("Page pinned in wrong frame!");
 				}
-				bm.unpinPage(j, filename, true);
+				bm.unpinPage(filename, j, true);
 				System.out.println("Page " + j + " at frame " + fn
 						+ " is unpinned.");
 			}
 		}
 
 		for (int i = bm.getPoolSize() * 2 + 5; i < bm.getPoolSize() * 2 + 10; i++) {
-			p = bm.pinPage(i, filename);
+			p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
 
-			int frameNumber = bm.findFrame(i, filename);
+			int frameNumber = bm.findFrame(filename, i);
 			int x = i - 2 * bm.getPoolSize() - 5;
 			if (frameNumber != frameNumbers[2 + x * 5]) {
 				throw new TestException("Frame number incorrect!");
@@ -118,12 +118,12 @@ public class Test5 implements Test {
 		}
 
 		for (int i = bm.getPoolSize() * 2 + 5; i < bm.getPoolSize() * 2 + 10; i++) {
-			int frameNumber = bm.findFrame(i, filename);
+			int frameNumber = bm.findFrame(filename, i);
 			int x = i - 2 * bm.getPoolSize() - 5;
 			if (frameNumber != frameNumbers[2 + x * 5]) {
 				throw new TestException("Page pinned in wrong frame!");
 			}
-			bm.unpinPage(i, filename, true);
+			bm.unpinPage(filename, i, true);
 			System.out.println("Page " + i + " at frame " + frameNumber
 					+ " is unpinned.");
 		}

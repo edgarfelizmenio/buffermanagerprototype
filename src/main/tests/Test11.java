@@ -7,12 +7,21 @@ import main.exceptions.TestException;
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
+/**
+ * Tests if the following cases are handled properly:
+ * <ol>
+ * <li>Pinning an allocated page.</li>
+ * <li>Flushing all the pages.</li>
+ * <li>Erasing a file.</li>
+ * <li>Flushing all the pages twice.</li>
+ * </ol>
+ */
 public class Test11 implements Test {
 
 	public void execute() throws DBFileException, BadFileException,
@@ -39,24 +48,24 @@ public class Test11 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
 
-		bm.newPage(15, filename);
-		bm.unpinPage(0, filename, false);
+		bm.newPage(filename, 15);
+		bm.unpinPage(filename, 0, false);
 
 		for (int i = 0; i < 13; i++) {
-			Page p = bm.pinPage(i, filename);
+			Page p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
-			bm.unpinPage(i, filename, true);
+			bm.unpinPage(filename, i, true);
 		}
 
 		bm.flushPages();
-		FileSystem.getInstance().erase(filename);
+		DiskSpaceManager.getInstance().eraseFile(filename);
 		bm.flushPages();
 
 		System.out.println("Successfully deleted and flushed again.");

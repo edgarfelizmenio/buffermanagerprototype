@@ -6,7 +6,7 @@ import java.util.Set;
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -26,11 +26,11 @@ public class Test6 implements Test {
 
 		int poolSize = 25;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, "RandomPolicy");
 
-		bm.newPage(bm.getPoolSize() * 6, filename);
-		bm.unpinPage(0, filename, false);
+		bm.newPage(filename, bm.getPoolSize() * 6);
+		bm.unpinPage(filename, 0, false);
 
 		Page p;
 
@@ -38,9 +38,9 @@ public class Test6 implements Test {
 		Set<Integer> frameNumbers = new HashSet<Integer>();
 
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			p = bm.pinPage(i + 6, filename);
+			p = bm.pinPage(filename, i + 6);
 
-			int frameNumber = bm.findFrame(i + 6, filename);
+			int frameNumber = bm.findFrame(filename, i + 6);
 
 			if (frameNumber < 0 || frameNumber >= bm.getPoolSize()) {
 				throw new TestException("Invalid frame returned.");
@@ -52,32 +52,32 @@ public class Test6 implements Test {
 		}
 
 		// try pinning an extra page
-		p = bm.pinPage(bm.getPoolSize() * 2, filename);
+		p = bm.pinPage(filename, bm.getPoolSize() * 2);
 		if (p != null) {
 			throw new TestException("Pinned page in full buffer.");
 		}
 
 		// unpin the pages
 		for (int i = 0; i < bm.getPoolSize(); i++) {
-			int frameNumber = bm.findFrame(i + 6, filename);
+			int frameNumber = bm.findFrame(filename, i + 6);
 
 			if (!frameNumbers.contains(frameNumber)) {
 				throw new TestException("Pinned page has invalid frame number.");
 			}
 			frameNumbers.remove(frameNumber);
 
-			bm.unpinPage(i + 6, filename, false);
+			bm.unpinPage(filename, i + 6, false);
 			System.out.println("Page " + (i + 6) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}
 
 		// pin a new set of pages
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			p = bm.pinPage(i + 6, filename);
+			p = bm.pinPage(filename, i + 6);
 			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
-			int frameNumber = bm.findFrame(i + 6, filename);
+			int frameNumber = bm.findFrame(filename, i + 6);
 
 			if (frameNumbers.contains(frameNumber)) {
 				throw new TestException("Duplicate frame number!");
@@ -91,24 +91,24 @@ public class Test6 implements Test {
 
 		// unpin the new set of pages
 		for (int i = bm.getPoolSize(); i < 2 * bm.getPoolSize(); i++) {
-			int frameNumber = bm.findFrame(i + 6, filename);
+			int frameNumber = bm.findFrame(filename, i + 6);
 			if (!frameNumbers.contains(frameNumber)) {
 				throw new TestException("Invalid frame number!");
 			} else {
 				frameNumbers.remove(frameNumber);
 			}
-			bm.unpinPage(i + 6, filename, true);
+			bm.unpinPage(filename, i + 6, true);
 			System.out.println("Page " + (i + 6) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}
 
 		// pin another set of pages
 		for (int i = 2 * bm.getPoolSize(); i < 2 * bm.getPoolSize() + 5; i++) {
-			p = bm.pinPage(i + 7, filename);
+			p = bm.pinPage(filename, i + 7);
 			if (p == null) {
 				throw new TestException("Unable to pin page.");
 			}
-			int frameNumber = bm.findFrame(i + 7, filename);
+			int frameNumber = bm.findFrame(filename, i + 7);
 
 			if (frameNumbers.contains(frameNumber)) {
 				throw new TestException("Duplicate frame number!");
@@ -123,13 +123,13 @@ public class Test6 implements Test {
 
 		// unpin the new set of pages
 		for (int i = 2 * bm.getPoolSize(); i < 2 * bm.getPoolSize() + 5; i++) {
-			int frameNumber = bm.findFrame(i + 7, filename);
+			int frameNumber = bm.findFrame(filename, i + 7);
 			if (!frameNumbers.contains(frameNumber)) {
 				throw new TestException("Invalid frame number!");
 			} else {
 				frameNumbers.remove(frameNumber);
 			}
-			bm.unpinPage(i + 7, filename, true);
+			bm.unpinPage(filename, i + 7, true);
 			System.out.println("Page " + (i + 7) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}

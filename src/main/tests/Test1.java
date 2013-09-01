@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -27,7 +27,7 @@ public class Test1 implements Test {
 			NoSuchFieldException, InstantiationException,
 			ClassNotFoundException, PagePinnedException, PageNotPinnedException {
 
-		FileSystem fs = FileSystem.getInstance();
+		DiskSpaceManager fs = DiskSpaceManager.getInstance();
 
 		fs.createFile("testing", 5);
 
@@ -83,8 +83,8 @@ public class Test1 implements Test {
 			System.out.println(e.getMessage());
 		}
 
-		System.out.println(fs.erase("testing")); // should print true
-		System.out.println(fs.erase("testagain")); // should print true
+		System.out.println(fs.eraseFile("testing")); // should print true
+		System.out.println(fs.eraseFile("testagain")); // should print true
 		fs.listFiles();
 
 	}

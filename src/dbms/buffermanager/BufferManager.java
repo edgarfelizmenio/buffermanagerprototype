@@ -5,13 +5,24 @@ import java.lang.reflect.InvocationTargetException;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.buffermanager.policies.LRUPolicy;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-
+/**
+ * DBMS component that manages the buffer pool. This component allows other DBMS
+ * components to do the following:
+ * <ul>
+ * <li>Request a page.</li>
+ * <li>Release a page.</li>
+ * <li>Allocate a page to a file.</li>
+ * <li>Deallocate a page from a file.</li>
+ * <li>Flush a dirty page.</li>
+ * </ul>
+ * 
+ */
 public class BufferManager {
 	public static int DEFAULT_BUFFER_SIZE = 10;
 	public static String DEFAULT_POLICY = "LRU";
@@ -19,6 +30,22 @@ public class BufferManager {
 	private Frame[] bufferPool;
 	private Policy policy;
 
+	/**
+	 * Creates a buffer manager with the specified size and buffer replacement
+	 * policy.
+	 * 
+	 * @param bufferSize
+	 *            Size of the buffer pool.
+	 * @param policy
+	 *            The policy that will be followed in replacing pages.
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws SecurityException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws ClassNotFoundException
+	 */
 	public BufferManager(int bufferSize, String policy)
 			throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, SecurityException,
@@ -35,7 +62,26 @@ public class BufferManager {
 		loadPolicy(policy);
 	}
 
-	public Page pinPage(int pageId, String filename) throws BadFileException,
+	/**
+	 * Pins a page in buffer pool. If the page is not yet in the buffer pool,
+	 * look for an available frame for this page, make a copy of the page, and
+	 * pin it. Write out the old page, if it is dirty, before reading.
+	 * 
+	 * @param filename
+	 *            The name of file that contains the page to be pinned.
+	 * @param pageId
+	 *            The page id of the page to be pinned.
+	 * @return A reference to the page that is pinned in the buffer pool. If the
+	 *         page is not in the buffer pool and there is no available frame,
+	 *         return <code>null</code>.
+	 * @throws BadFileException
+	 *             If the file does not exist.
+	 * @throws BadPageNumberException
+	 *             If the page does not exist.
+	 * @throws DBFileException
+	 *             If the page is not allocated.
+	 */
+	public Page pinPage(String filename, int pageId) throws BadFileException,
 			BadPageNumberException, DBFileException {
 		Frame frame = null;
 
@@ -62,13 +108,14 @@ public class BufferManager {
 				// replacement is on
 				if (frame.isDirty()) {
 					frame.setDirty(false);
-					FileSystem.getInstance().writePage(frame.getFilename(),
-							frame.getPageNum(), frame.getPage());
+					DiskSpaceManager.getInstance().writePage(
+							frame.getFilename(), frame.getPageNum(),
+							frame.getPage());
 				}
 
 				// read requested page into replacement frame
 				Page p = Page.makePage();
-				FileSystem.getInstance().readPage(filename, pageId, p);
+				DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 				frame.setPage(filename, pageId, p);
 				policy.pagePinned(frame);
@@ -82,7 +129,21 @@ public class BufferManager {
 		return frame.getPage();
 	}
 
-	public void unpinPage(int pageId, String filename, boolean dirty)
+	/**
+	 * Unpins a page in the buffer pool. If the pin count of the page is greater
+	 * than 0, decrement its pin count. If the pin count becomes zero, it is
+	 * appropriately included in a group of replacement candidates.
+	 * 
+	 * @param filename
+	 *            The name of file that contains the page to be unpinned.
+	 * @param pageId
+	 *            The page id of the page to be pinned.
+	 * @param dirty
+	 *            Indicates whether or not the page is dirty.
+	 * @throws PageNotPinnedException
+	 *             If the page is not pinned.
+	 */
+	public void unpinPage(String filename, int pageId, boolean dirty)
 			throws PageNotPinnedException {
 		for (Frame f : bufferPool) {
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
@@ -100,15 +161,37 @@ public class BufferManager {
 		throw new PageNotPinnedException("Unpinning a nonexistent page!");
 	}
 
-	public int newPage(int numPages, String filename) throws DBFileException,
+	/**
+	 * Requests a new set of pages from the underlying database, then finds a
+	 * frame in the buffer pool for the page page and pins it. Return the
+	 * <code>pageId</code> of the first page that is allocated for the file. If
+	 * the buffer pool is full, no new pages are allocated from the database and
+	 * <code>Page.NO_PAGE_NUMBER</code> is returned.
+	 * 
+	 * @param filename
+	 *            The name of file where the pages will be allocated.
+	 * @param numPages
+	 *            The number of pages to be allocated.
+	 * @return The <code>pageId</code> of the first page that is allocated for
+	 *         the file.
+	 * @throws DBFileException
+	 *             If the number of pages is not positive or a write to an
+	 *             unallocated page is requested.
+	 * @throws BadFileException
+	 *             If the file does not exist.
+	 * @throws BadPageNumberException
+	 *             If the page does not exist.
+	 */
+	public int newPage(String filename, int numPages) throws DBFileException,
 			BadFileException, BadPageNumberException {
 
 		// find a frame in the buffer pool
 		Frame frame = policy.chooseFrame();
 
 		if (frame != null) {
-			// if the buffer pool is not full, allocate pages and and pin the first page on the free frame
-			int pageId = FileSystem.getInstance().allocatePages(filename,
+			// if the buffer pool is not full, allocate pages and and pin the
+			// first page on the free frame
+			int pageId = DiskSpaceManager.getInstance().allocatePages(filename,
 					numPages);
 
 			frame.pin(filename, pageId);
@@ -117,13 +200,13 @@ public class BufferManager {
 			// replacement is on
 			if (frame.isDirty()) {
 				frame.setDirty(false);
-				FileSystem.getInstance().writePage(frame.getFilename(),
+				DiskSpaceManager.getInstance().writePage(frame.getFilename(),
 						frame.getPageNum(), frame.getPage());
 			}
 
 			// read requested page into replacement frame
 			Page p = Page.makePage();
-			FileSystem.getInstance().readPage(filename, pageId, p);
+			DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 			frame.setPage(filename, pageId, p);
 			policy.pagePinned(frame);
@@ -136,9 +219,24 @@ public class BufferManager {
 		return frame.getPageNum();
 	}
 
+	/**
+	 * Deallocates a page from the underlying database. Verifies that the page
+	 * is not pinned. If the page is not in the buffer pool, do nothing.
+	 * 
+	 * @param filename
+	 *            The name of file containing the page to be deallocated.
+	 * @param pageId
+	 *            The pageId of the page to be deallocated.
+	 * @throws PagePinnedException
+	 *             If the page is pinned.
+	 * @throws DBFileException
+	 *             If the number of pages to be deallocated is not positive.
+	 * @throws BadPageNumberException
+	 *             If the page does not exist.
+	 */
 	public void freePage(String filename, int pageId)
 			throws PagePinnedException, DBFileException, BadPageNumberException {
-		int frameNumber = this.findFrame(pageId, filename);
+		int frameNumber = this.findFrame(filename, pageId);
 		if (frameNumber != -1) {
 			Frame f = bufferPool[frameNumber];
 			if (f.getPinCount() > 0) {
@@ -147,35 +245,76 @@ public class BufferManager {
 
 			f.setPage(null, Page.NO_PAGE_NUMBER, null);
 
-			FileSystem.getInstance().deallocatePages(filename, pageId, 1);
+			DiskSpaceManager.getInstance().deallocatePages(filename, pageId, 1);
 		}
 	}
 
+	/**
+	 * Flushes (writes) a page from the buffer pool to the underlying database
+	 * if it is dirty. If page is not dirty, it is not flushed. If the page is
+	 * not in the buffer pool, do nothing, since the page is effectively flushed
+	 * already.
+	 * 
+	 * @param filename
+	 *            The name of file containing the page to be flushed.
+	 * @param pageId
+	 *            The pageId of the page to be flushed.
+	 * @throws BadFileException
+	 *             If the file does not exist.
+	 * @throws BadPageNumberException
+	 *             If the page does not exist.
+	 * @throws DBFileException
+	 *             If the page is not allocated.
+	 */
 	public void flushPage(String filename, int pageId) throws BadFileException,
 			BadPageNumberException, DBFileException {
-		int frameNumber = findFrame(pageId, filename);
+		int frameNumber = findFrame(filename, pageId);
 		if (frameNumber > -1) {
 			Frame f = bufferPool[frameNumber];
 			if (f.isDirty()) {
 				f.setDirty(false);
-				FileSystem.getInstance().writePage(filename, pageId,
+				DiskSpaceManager.getInstance().writePage(filename, pageId,
 						f.getPage());
 			}
 		}
 	}
 
+	/**
+	 * Flushes all dirty pages from the buffer pool to the underlying database.
+	 * If a page is not dirty, it is not flushed.
+	 * 
+	 * @throws BadFileException
+	 *             If a page that belongs to a deleted (or a nonexistent) file
+	 *             will be flushed.
+	 * @throws BadPageNumberException
+	 *             If a page that is already deleted from the database will be
+	 *             flushed.
+	 * @throws DBFileException
+	 *             If an unallocated page will be flushed.
+	 */
 	public void flushPages() throws BadFileException, BadPageNumberException,
 			DBFileException {
 		for (Frame f : bufferPool) {
 			if (f.isDirty()) {
 				f.setDirty(false);
-				FileSystem.getInstance().writePage(f.getFilename(),
+				DiskSpaceManager.getInstance().writePage(f.getFilename(),
 						f.getPageNum(), f.getPage());
 			}
 		}
 	}
-	
-	public Page findPage(int pageId, String filename) {
+
+	/**
+	 * Finds the page in the buffer pool with the specified filename and page
+	 * Id.
+	 * 
+	 * @param filename
+	 *            The name of the file containing the page.
+	 * @param pageId
+	 *            The page Id of the file containing the page.
+	 * @return The page in the buffer pool with the specified filename and page
+	 *         Id, <code>null</code> if the page is not in the buffer pool.
+	 */
+	public Page findPage(String filename, int pageId) {
 		for (int i = 0; i < bufferPool.length; i++) {
 			if ((!bufferPool[i].isFree())
 					&& (bufferPool[i].getFilename() == filename && bufferPool[i]
@@ -186,7 +325,18 @@ public class BufferManager {
 		return null;
 	}
 
-	public int findFrame(int pageId, String filename) {
+	/**
+	 * Finds the frame in the buffer pool containing the page with the specified
+	 * filename and page Id.
+	 * 
+	 * @param filename
+	 *            The name of the file containing the page.
+	 * @param pageId
+	 *            The page Id of the file containing the page.
+	 * @return The frame number of the frame containing the page ,
+	 *         <code>-1</code> if the page is not in the buffer pool.
+	 */
+	public int findFrame(String filename, int pageId) {
 		for (int i = 0; i < bufferPool.length; i++) {
 			if ((!bufferPool[i].isFree())
 					&& (bufferPool[i].getFilename() == filename && bufferPool[i]
@@ -197,10 +347,26 @@ public class BufferManager {
 		return -1;
 	}
 
+	/**
+	 * Gets the size of the buffer pool.
+	 * 
+	 * @return The size of the buffer pool.
+	 */
 	public int getPoolSize() {
 		return bufferPool.length;
 	}
 
+	/**
+	 * Loads the buffer replacement policy.
+	 * @param policy The name of the policy.
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
 	@SuppressWarnings("unchecked")
 	private void loadPolicy(String policy) throws ClassNotFoundException,
 			InstantiationException, IllegalAccessException,

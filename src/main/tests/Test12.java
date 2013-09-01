@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -40,16 +40,16 @@ public class Test12 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
 		
-		bm.newPage(bm.getPoolSize() * 2, filename);
-		bm.unpinPage(0, filename, false);
+		bm.newPage(filename, bm.getPoolSize() * 2);
+		bm.unpinPage(filename, 0, false);
 		
 		for (int i = 0; i < bm.getPoolSize() + 1; i++) {
-			Page p = bm.pinPage(i, filename);
+			Page p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
@@ -58,14 +58,14 @@ public class Test12 implements Test {
 			p.setContents(data);
 			bm.flushPage(filename, i);
 			System.out.println("after flushPage " + i);
-			bm.unpinPage(i, filename, true);
+			bm.unpinPage(filename, i, true);
 		}
 		
-		int pageNumber = bm.newPage(1, filename);
+		int pageNumber = bm.newPage(filename, 1);
 		if (pageNumber == Page.NO_PAGE_NUMBER) {
 			throw new TestException("newPage failed!");
 		}
-		Page p = bm.findPage(pageNumber, filename);
+		Page p = bm.findPage(filename, pageNumber);
 		
 		// Verify that page is empty
 		boolean empty = true;

@@ -8,7 +8,7 @@ import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.Frame;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -45,7 +45,7 @@ public class Test7 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
@@ -66,18 +66,18 @@ public class Test7 implements Test {
 
 		// Allocate 10 pages from database
 		for (int i = 0; i < 10; i++) {
-			int pageNumber = bm.newPage(1, filename);
+			int pageNumber = bm.newPage(filename, 1);
 			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("BufferManager.newPage failed!");
 			}
 			pageIds[i] = pageNumber;
-			pages[i] = bm.findPage(pageNumber, filename);
+			pages[i] = bm.findPage(filename, pageNumber);
 		}
 
 		// Pin first 10 pages a second time
 		for (int i = 0; i < 10; i++) {
 			System.out.println("Pinning page " + i + " " + pageIds[i]);
-			Page p = bm.pinPage(pageIds[i], filename);
+			Page p = bm.pinPage(filename, pageIds[i]);
 			if (p == null) {
 				throw new TestException("Unable to pin page");
 			}
@@ -106,15 +106,15 @@ public class Test7 implements Test {
 
 		// Free pages 0 to 9 by first unpinning each page twice
 		for (int i = 0; i < 10; i++) {
-			bm.unpinPage(pageIds[i], filename, false);
-			bm.unpinPage(pageIds[i], filename, false);
+			bm.unpinPage(filename, pageIds[i], false);
+			bm.unpinPage(filename, pageIds[i], false);
 			bm.freePage(filename, pageIds[i]);
 			System.out.println("Freed page " + pageIds[i]);
 		}
 
 		// Get 14 more pages
 		for (int i = 10; i < 24; i++) {
-			int pageNumber = bm.newPage(1, filename);
+			int pageNumber = bm.newPage(filename, 1);
 			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("BufferManager.newPage failed!");
 			}

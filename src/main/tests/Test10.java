@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
-import dbms.diskspacemanager.FileSystem;
+import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
@@ -48,17 +48,17 @@ public class Test10 implements Test {
 
 		int poolSize = 20;
 		String filename = "test";
-		FileSystem.getInstance().createFile(filename, 0);
+		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
 
-		bm.newPage(15, filename);
-		bm.unpinPage(0, filename, false);
+		bm.newPage(filename, 15);
+		bm.unpinPage(filename, 0, false);
 
 		Page p;
 		for (int i = 0; i < 13; i++) {
-			p = bm.pinPage(i, filename);
+			p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
@@ -67,11 +67,11 @@ public class Test10 implements Test {
 			p.setContents(data);
 			bm.flushPage(filename, i);
 			System.out.println("After flushPage " + i);
-			bm.unpinPage(i, filename, true);
+			bm.unpinPage(filename, i, true);
 		}
 
 		for (int i = 0; i < 13; i++) {
-			p = bm.pinPage(i, filename);
+			p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
@@ -83,13 +83,13 @@ public class Test10 implements Test {
 			if (!readBack.substring(0, orig.length()).equals(orig)) {
 				throw new TestException("Page content incorrect!");
 			}
-			bm.unpinPage(i, filename, false);
+			bm.unpinPage(filename, i, false);
 		}
 
 		// Try to pin a page in a different file
 		boolean success = false;
 		try {
-			p = bm.pinPage(1, filename + "bheb");
+			p = bm.pinPage(filename + "bheb", 1);
 		} catch (BadFileException bfe) {
 			System.out.println("Successfully caught pinning wrong file");
 			success = true;
