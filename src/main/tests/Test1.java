@@ -3,6 +3,8 @@ package main.tests;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+import dbms.buffermanager.exceptions.PageNotPinnedException;
+import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.diskspacemanager.FileSystem;
 import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
@@ -18,13 +20,12 @@ import main.exceptions.TestException;
  */
 public class Test1 implements Test {
 
-	@Override
 	public void execute() throws DBFileException, BadFileException,
 			BadPageNumberException, TestException, NoSuchMethodException,
 			SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, InstantiationException,
-			ClassNotFoundException {
+			ClassNotFoundException, PagePinnedException, PageNotPinnedException {
 
 		FileSystem fs = FileSystem.getInstance();
 
@@ -85,5 +86,6 @@ public class Test1 implements Test {
 		System.out.println(fs.erase("testing")); // should print true
 		System.out.println(fs.erase("testagain")); // should print true
 		fs.listFiles();
+
 	}
 }

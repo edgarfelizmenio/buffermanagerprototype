@@ -12,9 +12,9 @@ import dbms.diskspacemanager.exceptions.DBFileException;
 
 public interface Test {
 	public void execute() throws DBFileException, BadFileException,
-			BadPageNumberException, TestException, NoSuchMethodException,
-			SecurityException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException,
-			NoSuchFieldException, InstantiationException,
-			ClassNotFoundException, PagePinnedException, PageNotPinnedException;
+	BadPageNumberException, TestException, NoSuchMethodException,
+	SecurityException, IllegalAccessException,
+	IllegalArgumentException, InvocationTargetException,
+	NoSuchFieldException, InstantiationException,
+	ClassNotFoundException, PagePinnedException, PageNotPinnedException;
 }

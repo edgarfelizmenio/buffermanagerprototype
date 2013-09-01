@@ -24,7 +24,6 @@ import main.exceptions.TestException;
  */
 public class Test10 implements Test {
 
-	@Override
 	public void execute() throws DBFileException, BadFileException,
 			BadPageNumberException, TestException, NoSuchMethodException,
 			SecurityException, IllegalAccessException,
@@ -53,11 +52,10 @@ public class Test10 implements Test {
 		BufferManager bm = new BufferManager(poolSize, policy);
 
 		System.out.println("Testing " + policy + "...");
-		
-		
+
 		bm.newPage(15, filename);
 		bm.unpinPage(0, filename, false);
-		
+
 		Page p;
 		for (int i = 0; i < 13; i++) {
 			p = bm.pinPage(i, filename);
@@ -67,35 +65,36 @@ public class Test10 implements Test {
 			System.out.println("After pinPage " + i);
 			char[] data = ("This is test 10 for page " + i).toCharArray();
 			p.setContents(data);
-			bm.flushPage(filename,i);
+			bm.flushPage(filename, i);
 			System.out.println("After flushPage " + i);
 			bm.unpinPage(i, filename, true);
 		}
-		
+
 		for (int i = 0; i < 13; i++) {
-			p =bm.pinPage(i, filename);
+			p = bm.pinPage(i, filename);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
 			String readBack = new String(p.getContents());
 			String orig = "This is test 10 for page " + i;
-			
-			System.out.println("PAGE[ " + i + " ]: " + readBack.substring(0,orig.length()));
+
+			System.out.println("PAGE[ " + i + " ]: "
+					+ readBack.substring(0, orig.length()));
 			if (!readBack.substring(0, orig.length()).equals(orig)) {
 				throw new TestException("Page content incorrect!");
 			}
 			bm.unpinPage(i, filename, false);
 		}
-		
+
 		// Try to pin a page in a different file
 		boolean success = false;
 		try {
 			p = bm.pinPage(1, filename + "bheb");
-		} catch(BadFileException bfe) {
+		} catch (BadFileException bfe) {
 			System.out.println("Successfully caught pinning wrong file");
 			success = true;
 		}
-		
+
 		if (!success) {
 			throw new TestException("Pinned wrong file!");
 		}
