@@ -61,7 +61,7 @@ public class Test7 implements Test {
 		Class<Frame> frameClass = (Class<Frame>) cl.loadClass(Frame.class
 				.getName());
 
-		Field pageIdField = frameClass.getDeclaredField("pageNum");
+		Field pageIdField = frameClass.getDeclaredField("pageId");
 		pageIdField.setAccessible(true);
 
 		// Allocate 10 pages from database
