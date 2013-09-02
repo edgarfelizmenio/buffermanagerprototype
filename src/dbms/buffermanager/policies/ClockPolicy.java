@@ -36,7 +36,7 @@ public class ClockPolicy extends Policy {
 				replacements++;
 			} else {
 				frameNumber = current;
-//				updateCurrent();
+				updateCurrent();
 				break;
 			}
 
@@ -45,19 +45,21 @@ public class ClockPolicy extends Policy {
 				break;
 			}
 		}
-		System.err.println(frameNumber);
 		return frameNumber;
 	}
 
 	@Override
 	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
-		// Do nothing.
+		this.pinCount[frameNumber] = pinCount;
 	}
 
 	@Override
 	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
 		this.pinCount[frameNumber] = pinCount;
-		isReferenced[frameNumber] = true;
+		if (pinCount == 0) {
+			isReferenced[frameNumber] = true;			
+		}
+
 	}
 
 	private void updateCurrent() {
