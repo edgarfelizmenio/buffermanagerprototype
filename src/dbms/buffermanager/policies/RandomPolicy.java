@@ -4,45 +4,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.Policy;
-
 
 public class RandomPolicy extends Policy {
 
-	private List<Frame> usedFrames;
+	private List<Integer> usedFrames;
 	private Random random;
 
-	public RandomPolicy(Frame[] bufferPool) {
-		super(bufferPool);
-		this.usedFrames = new ArrayList<Frame>();
+	public RandomPolicy(int poolSize) {
+		super(poolSize);
+		this.usedFrames = new ArrayList<Integer>();
 		this.random = new Random();
 	}
 
 	@Override
-	public Frame chooseFrame() {
-		for (Frame f : bufferPool) {
-			if (f.isFree()) {
-				return f;
-			}
-		}
-
+	public int chooseFrame() {
 		if (!usedFrames.isEmpty()) {
 			int index = random.nextInt(usedFrames.size());
 			return usedFrames.remove(index);
 		}
-		return null;
+		return -1;
 	}
 
 	@Override
-	public void pagePinned(Frame f) {
+	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
 		// do nothing
 	}
 
 	@Override
-	public void pageUnpinned(Frame f) {
-		if (f.getPinCount() == 0) {
-			usedFrames.add(f);
+	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+		if (pinCount == 0) {
+			usedFrames.add(frameNumber);
 		}
 	}
 

@@ -4,38 +4,34 @@ package dbms.buffermanager.policies;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.Policy;
 
 public class LRUPolicy extends Policy {
 
-	private Queue<Frame> recentlyUsedFrames;
+	private Queue<Integer> recentlyUsedFrames;
 	
-	public LRUPolicy(Frame[] bufferPool) {
-		super(bufferPool);
-		this.recentlyUsedFrames = new LinkedList<Frame>();
+	public LRUPolicy(int poolSize) {
+		super(poolSize);
+		this.recentlyUsedFrames = new LinkedList<Integer>();
 	}
 
 	@Override
-	public Frame chooseFrame() {
-		for (Frame f: bufferPool) {
-			if (f.isFree()) {
-				return f;
-			}
+	public int chooseFrame() {
+		if (recentlyUsedFrames.isEmpty()) {
+			return -1;
 		}
-		
 		return recentlyUsedFrames.poll();
 	}
 
 	@Override
-	public void pagePinned(Frame f) {
+	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
 		// Do nothing
 	}
 
 	@Override
-	public void pageUnpinned(Frame f) {
-		if (f != null && f.getPinCount() == 0) {
-			recentlyUsedFrames.add(f);
+	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+		if (pinCount == 0) {
+			recentlyUsedFrames.add(frameNumber);
 		}
 	}
 

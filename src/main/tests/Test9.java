@@ -39,7 +39,9 @@ public class Test9 implements Test {
 				"RandomPolicy" };
 
 		for (String policy : policies) {
+			System.out.println("Testing " + policy + "...");
 			testPolicy(policy);
+			System.out.println("End of test for policy " + policy + ".");
 		}
 	}
 
@@ -56,7 +58,7 @@ public class Test9 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
+
 
 		int[] pageIds = new int[30];
 

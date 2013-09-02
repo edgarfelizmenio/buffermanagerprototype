@@ -3,38 +3,34 @@ package dbms.buffermanager.policies;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.Policy;
 
 
 public class MRUPolicy extends Policy {
 
-	private Deque<Frame> recentlyUsedFrames;
+	private Deque<Integer> recentlyUsedFrames;
 
-	public MRUPolicy(Frame[] bufferPool) {
-		super(bufferPool);
-		this.recentlyUsedFrames = new LinkedList<Frame>();
+	public MRUPolicy(int poolSize) {
+		super(poolSize);
+		this.recentlyUsedFrames = new LinkedList<Integer>();
 	}
 
 	@Override
-	public Frame chooseFrame() {
-		for (Frame f : bufferPool) {
-			if (f.isFree()) {
-				return f;
-			}
+	public int chooseFrame() {
+		if (recentlyUsedFrames.isEmpty()) {
+			return -1;
 		}
-
 		return recentlyUsedFrames.pollLast();
 	}
 
 	@Override
-	public void pagePinned(Frame f) {
+	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
 		// do nothing
 	}
 
 	@Override
-	public void pageUnpinned(Frame f) {
-		recentlyUsedFrames.addLast(f);
+	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+		recentlyUsedFrames.addLast(frameNumber);
 	}
 
 }

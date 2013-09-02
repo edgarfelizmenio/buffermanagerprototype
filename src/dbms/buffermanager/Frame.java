@@ -55,7 +55,7 @@ public class Frame {
 		return pageId;
 	}
 
-	public int getPinCount() {
+	int getPinCount() {
 		return pinCount;
 	}
 
@@ -63,7 +63,7 @@ public class Frame {
 		return this.dirty;
 	}
 
-	public boolean isFree() {
+	boolean isFree() {
 		return page == null;
 	}
 }

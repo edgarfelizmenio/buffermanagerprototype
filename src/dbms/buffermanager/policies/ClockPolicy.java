@@ -1,75 +1,68 @@
 package dbms.buffermanager.policies;
 
-import java.util.HashMap;
+import java.util.Arrays;
 
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.Policy;
-
 
 public class ClockPolicy extends Policy {
 
 	private int current;
-	private HashMap<Frame, Boolean> isReferenced;
+	private boolean[] isReferenced;
+	private int[] pinCount;
 
-	public ClockPolicy(Frame[] bufferPool) {
-		super(bufferPool);
+	public ClockPolicy(int poolSize) {
+		super(poolSize);
 
 		this.current = 0;
-		this.isReferenced = new HashMap<Frame, Boolean>();
+		this.isReferenced = new boolean[poolSize];
+		this.pinCount = new int[poolSize];
 
-		for (Frame f : bufferPool) {
-			isReferenced.put(f, false);
-		}
-
+		Arrays.fill(isReferenced, false);
+		Arrays.fill(pinCount, 0);
 	}
 
 	@Override
-	public Frame chooseFrame() {
-		Frame frame = null;
-		for (Frame f : bufferPool) {
-			if (f.isFree()) {
-				return f;
-			}
-		}
-
+	public int chooseFrame() {
 		int start = current;
 		int replacements = 0;
+		int frameNumber = -1;
 
 		while (true) {
-			if (bufferPool[current].getPinCount() > 0) {
+			if (pinCount[current] > 0) {
 				updateCurrent();
-			} else if (isReferenced.get(bufferPool[current])) {
-				isReferenced.put(bufferPool[current], false);
+			} else if (isReferenced[current]) {
+				isReferenced[current] = false;
 				updateCurrent();
 				replacements++;
 			} else {
-				frame = bufferPool[current];
-				updateCurrent();
+				frameNumber = current;
+//				updateCurrent();
 				break;
 			}
 
 			if (start == current && replacements == 0) {
-				frame = null;
+				frameNumber = -1;
 				break;
 			}
 		}
-
-		return frame;
+		System.err.println(frameNumber);
+		return frameNumber;
 	}
 
 	@Override
-	public void pagePinned(Frame f) {
+	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
 		// Do nothing.
 	}
 
 	@Override
-	public void pageUnpinned(Frame f) {
-		isReferenced.put(f, true);
+	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+		this.pinCount[frameNumber] = pinCount;
+		isReferenced[frameNumber] = true;
 	}
 
 	private void updateCurrent() {
 		current++;
-		if (current >= bufferPool.length) {
+		if (current >= poolSize) {
 			current = 0;
 		}
 	}

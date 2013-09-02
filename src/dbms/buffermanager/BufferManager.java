@@ -86,11 +86,12 @@ public class BufferManager {
 		Frame frame = null;
 
 		// case 1: frame is in the buffer pool
-		for (Frame f : bufferPool) {
+		for (int i = 0; i < bufferPool.length; i++) {
+			Frame f = bufferPool[i];
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
 				f.pin(filename, pageId);
 				frame = f;
-				policy.pagePinned(frame);
+				policy.pagePinned(i, f.getPinCount(), f.isDirty());
 				break;
 			}
 		}
@@ -98,9 +99,12 @@ public class BufferManager {
 		// case 2: frame is not in the buffer pool
 		if (frame == null) {
 			// choose a frame for replacement
-			frame = policy.chooseFrame();
+			int frameNumber = this.selectFrame();
 
-			if (frame != null) {
+			if (frameNumber != -1) {
+
+				frame = bufferPool[frameNumber];
+
 				// increment pin count
 				frame.pin(filename, pageId);
 
@@ -118,7 +122,8 @@ public class BufferManager {
 				DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 				frame.setPage(filename, pageId, p);
-				policy.pagePinned(frame);
+				policy.pagePinned(frameNumber, frame.getPinCount(),
+						frame.isDirty());
 			}
 		}
 
@@ -145,7 +150,8 @@ public class BufferManager {
 	 */
 	public void unpinPage(String filename, int pageId, boolean dirty)
 			throws PageNotPinnedException {
-		for (Frame f : bufferPool) {
+		for (int i = 0; i < bufferPool.length; i++) {
+			Frame f = bufferPool[i];
 			if ((f.getFilename() == filename) && (f.getPageNum() == pageId)) {
 				if (f.getPinCount() == 0) {
 					throw new PageNotPinnedException(
@@ -153,7 +159,7 @@ public class BufferManager {
 				}
 				f.unpin();
 				f.setDirty(dirty);
-				policy.pageUnpinned(f);
+				policy.pageUnpinned(i, f.getPinCount(), dirty);
 				return;
 			}
 		}
@@ -185,10 +191,14 @@ public class BufferManager {
 	public int newPage(String filename, int numPages) throws DBFileException,
 			BadFileException, BadPageNumberException {
 
-		// find a frame in the buffer pool
-		Frame frame = policy.chooseFrame();
+		Frame frame = null;
 
-		if (frame != null) {
+		// find a frame in the buffer pool
+		int frameNumber = selectFrame();
+
+		if (frameNumber != -1) {
+
+			frame = bufferPool[frameNumber];
 			// if the buffer pool is not full, allocate pages and and pin the
 			// first page on the free frame
 			int pageId = DiskSpaceManager.getInstance().allocatePages(filename,
@@ -209,7 +219,7 @@ public class BufferManager {
 			DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 			frame.setPage(filename, pageId, p);
-			policy.pagePinned(frame);
+			policy.pagePinned(frameNumber, frame.getPinCount(), frame.isDirty());
 		}
 
 		// return null if frame is null
@@ -358,7 +368,9 @@ public class BufferManager {
 
 	/**
 	 * Loads the buffer replacement policy.
-	 * @param policy The name of the policy.
+	 * 
+	 * @param policy
+	 *            The name of the policy.
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
@@ -378,12 +390,28 @@ public class BufferManager {
 			Class<Policy> policyClass = (Class<Policy>) loader
 					.loadClass("dbms.buffermanager.policies." + policy);
 			;
-			this.policy = policyClass.getConstructor(Frame[].class)
-					.newInstance((Object) bufferPool);
+			this.policy = (Policy) policyClass.getConstructor(Integer.TYPE)
+					.newInstance((Object) bufferPool.length);
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();
 			System.err.println("Policy " + policy + " not found, using LRU.");
-			this.policy = new LRUPolicy(bufferPool);
+			this.policy = new LRUPolicy(bufferPool.length);
 		}
+	}
+
+	/**
+	 * Finds a frame where a page can be pinned. Returns <code>null</code> if
+	 * there are no free pages and all pages have pin count greater than 0.
+	 * 
+	 * @return A free frame or frame with pin count 0.
+	 */
+	private int selectFrame() {
+		for (int i = 0; i < bufferPool.length; i++) {
+			if (bufferPool[i].isFree()) {
+				return i;
+			}
+		}
+
+		return policy.chooseFrame();
 	}
 }

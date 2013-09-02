@@ -6,15 +6,15 @@ package dbms.buffermanager;
  * 
  */
 public abstract class Policy {
-	protected Frame[] bufferPool;
-
-	public Policy(Frame[] bufferPool) {
-		this.bufferPool = bufferPool;
+	protected int poolSize;
+	
+	public Policy(int poolSize) {
+		this.poolSize = poolSize;
 	}
 
-	public abstract Frame chooseFrame();
+	public abstract int chooseFrame();
 
-	public abstract void pagePinned(Frame f);
+	public abstract void pagePinned(int frameNumber, int pinCount, boolean dirty);
 
-	public abstract void pageUnpinned(Frame f);
+	public abstract void pageUnpinned(int frameNumber, int pinCount, boolean dirty);
 }
