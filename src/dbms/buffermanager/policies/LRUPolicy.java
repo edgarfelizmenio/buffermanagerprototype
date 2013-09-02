@@ -24,12 +24,12 @@ public class LRUPolicy extends Policy {
 	}
 
 	@Override
-	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pagePinned(int frameNumber, int pinCount) {
 		// Do nothing
 	}
 
 	@Override
-	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pageUnpinned(int frameNumber, int pinCount) {
 		if (pinCount == 0) {
 			recentlyUsedFrames.add(frameNumber);
 		}

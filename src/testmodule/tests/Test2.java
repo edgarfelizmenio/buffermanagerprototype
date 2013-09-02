@@ -1,7 +1,11 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
@@ -11,8 +15,6 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-import main.Test;
-import main.exceptions.TestException;
 
 /**
  * Tests the pinPage, unpinPage, and writing dirty pages to disk.
@@ -48,7 +50,7 @@ public class Test2 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
+		System.err.println("Testing " + policy + "...");
 
 		int first = 5;
 		int last = first + bm.getPoolSize() + 5;
@@ -62,7 +64,7 @@ public class Test2 implements Test {
 			if (p == null) {
 				throw new TestException("Unable to pin page 1st time");
 			}
-			System.out.println("After pin page " + i);
+			System.err.println("After pin page " + i);
 
 			char[] data = ("This is test 1 for page " + i).toCharArray();
 
@@ -71,10 +73,10 @@ public class Test2 implements Test {
 
 			bm.unpinPage(filename, i, true);
 
-			System.out.println("After unpin page " + i);
+			System.err.println("After unpin page " + i);
 		}
 
-		System.out.println();
+		System.err.println();
 
 		// Check if the contents of a dirty page are written to disk
 		for (int i = first; i <= last; i++) {

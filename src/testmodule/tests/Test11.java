@@ -1,9 +1,11 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.InvocationTargetException;
 
-import main.Test;
-import main.exceptions.TestException;
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
+
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
@@ -51,7 +53,7 @@ public class Test11 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
+		System.err.println("Testing " + policy + "...");
 
 		bm.newPage(filename, 15);
 		bm.unpinPage(filename, 0, false);
@@ -68,7 +70,7 @@ public class Test11 implements Test {
 		DiskSpaceManager.getInstance().eraseFile(filename);
 		bm.flushPages();
 
-		System.out.println("Successfully deleted and flushed again.");
+		System.err.println("Successfully deleted and flushed again.");
 	}
 
 }

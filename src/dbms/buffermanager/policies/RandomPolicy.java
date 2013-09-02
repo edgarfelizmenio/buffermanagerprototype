@@ -27,12 +27,12 @@ public class RandomPolicy extends Policy {
 	}
 
 	@Override
-	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pagePinned(int frameNumber, int pinCount) {
 		// do nothing
 	}
 
 	@Override
-	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pageUnpinned(int frameNumber, int pinCount) {
 		if (pinCount == 0) {
 			usedFrames.add(frameNumber);
 		}

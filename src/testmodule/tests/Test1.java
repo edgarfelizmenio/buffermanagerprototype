@@ -1,7 +1,11 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
@@ -11,11 +15,9 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-import main.Test;
-import main.exceptions.TestException;
 
 /**
- * Test stub for the FileSystem
+ * Test stub for the DiskSpaceManager
  * 
  */
 public class Test1 implements Test {
@@ -35,8 +37,8 @@ public class Test1 implements Test {
 		fs.deallocatePages("testing", 1, 2); // pages 1-2 will be deleted.
 												// file now has 7 pages
 
-		System.out.println(fs.allocatePages("testing", 2)); // page 9 and 10
-		System.out.println(fs.allocatePages("testing", 1)); // page 11
+		System.err.println(fs.allocatePages("testing", 2)); // page 9 and 10
+		System.err.println(fs.allocatePages("testing", 1)); // page 11
 
 		Page p = Page.makePage();
 
@@ -45,47 +47,47 @@ public class Test1 implements Test {
 
 		fs.writePage("testing", 3, p);
 		fs.readPage("testing", 0, p);
-		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+		System.err.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
 				1, 10)));
-		System.out.println();
+		System.err.println();
 
 		fs.readPage("testing", 3, p);
-		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+		System.err.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
 				1, 10)));
-		System.out.println();
+		System.err.println();
 
 		fs.createFile("testagain", 7);
-		System.out.println(fs.allocatePages("testagain", 3));// pages 7,8,9
+		System.err.println(fs.allocatePages("testagain", 3));// pages 7,8,9
 		fs.writePage("testagain", 2, p);
 
 		fs.readPage("testagain", 1, p);
-		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+		System.err.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
 				1, 10)));
-		System.out.println();
+		System.err.println();
 
 		fs.readPage("testagain", 2, p);
-		System.out.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
+		System.err.println(Arrays.toString(Arrays.copyOfRange(p.getContents(),
 				1, 10)));
-		System.out.println();
+		System.err.println();
 
 		// pages 1 and 2 of file testing are already deallocated by this time
 		try {
 			fs.readPage("testing", 1, p);
 		} catch (DBFileException e) {
-			System.out.println("Correctly caught unallocated page read.");
-			System.out.println(e.getMessage());
+			System.err.println("Correctly caught unallocated page read.");
+			System.err.println(e.getMessage());
 		}
 
 		try {
 			fs.writePage("testing", 2, p);
 		} catch (DBFileException e) {
-			System.out.println("Correctly caught unallocated page write.");
-			System.out.println(e.getMessage());
+			System.err.println("Correctly caught unallocated page write.");
+			System.err.println(e.getMessage());
 		}
 
-		System.out.println(fs.eraseFile("testing")); // should print true
-		System.out.println(fs.eraseFile("testagain")); // should print true
-		fs.listFiles();
+		System.err.println(fs.eraseFile("testing")); // should print true
+		System.err.println(fs.eraseFile("testagain")); // should print true
+		System.err.println(fs.listFiles());
 
 	}
 }

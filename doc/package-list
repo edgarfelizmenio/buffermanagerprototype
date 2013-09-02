@@ -4,3 +4,6 @@ dbms.buffermanager.policies
 dbms.diskspacemanager
 dbms.diskspacemanager.exceptions
 dbms.diskspacemanager.page
+main
+main.exceptions
+main.tests

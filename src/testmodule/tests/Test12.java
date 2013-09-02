@@ -1,6 +1,10 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.InvocationTargetException;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
@@ -11,18 +15,8 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-import main.Test;
-import main.exceptions.TestException;
 
-/**
- * Tests if the following cases are handled properly:
- * <ol>
- * <li>Pinning an allocated page.</li>
- * <li>Propagating changes to disk (Check if a dirty page is written to disk).</li>
- * <li>Pinning a page in wrong file/nonexistent file.</li>
- * </ol>
- */
-public class Test10 implements Test {
+public class Test12 implements Test {
 
 	public void execute() throws DBFileException, BadFileException,
 			BadPageNumberException, TestException, NoSuchMethodException,
@@ -51,52 +45,45 @@ public class Test10 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
-
-		bm.newPage(filename, 15);
+		System.err.println("Testing " + policy + "...");
+		
+		bm.newPage(filename, bm.getPoolSize() * 2);
 		bm.unpinPage(filename, 0, false);
-
-		Page p;
-		for (int i = 0; i < 13; i++) {
-			p = bm.pinPage(filename, i);
+		
+		for (int i = 0; i < bm.getPoolSize() + 1; i++) {
+			Page p = bm.pinPage(filename, i);
 			if (p == null) {
 				throw new TestException("Pinning page failed!");
 			}
-			System.out.println("After pinPage " + i);
-			char[] data = ("This is test 10 for page " + i).toCharArray();
+			System.err.println("after pinPage " + i);
+			char[] data = ("This is test 8 for page " + i).toCharArray();
 			p.setContents(data);
 			bm.flushPage(filename, i);
-			System.out.println("After flushPage " + i);
+			System.err.println("after flushPage " + i);
 			bm.unpinPage(filename, i, true);
 		}
-
-		for (int i = 0; i < 13; i++) {
-			p = bm.pinPage(filename, i);
-			if (p == null) {
-				throw new TestException("Pinning page failed!");
-			}
-			String readBack = new String(p.getContents());
-			String orig = "This is test 10 for page " + i;
-
-			System.out.println("PAGE[ " + i + " ]: "
-					+ readBack.substring(0, orig.length()));
-			if (!readBack.substring(0, orig.length()).equals(orig)) {
-				throw new TestException("Page content incorrect!");
-			}
-			bm.unpinPage(filename, i, false);
+		
+		int pageNumber = bm.newPage(filename, 1);
+		if (pageNumber == Page.NO_PAGE_NUMBER) {
+			throw new TestException("newPage failed!");
 		}
-
-		// Try to pin a page in a different file
-		boolean success = false;
-		try {
-			p = bm.pinPage(filename + "bheb", 1);
-		} catch (BadFileException bfe) {
-			System.out.println("Successfully caught pinning wrong file");
-			success = true;
-		}
-
-		if (!success) {
-			throw new TestException("Pinned wrong file!");
+		Page p = bm.findPage(filename, pageNumber);
+		
+		// Verify that page is empty
+		boolean empty = true;
+		char contents[] = p.getContents();
+		for (int i = 0; i < Page.PAGE_SIZE; i++) {
+			if (contents[i] != '\0') {
+				empty = false;
+				break;
+		}}
+		
+		if (!empty) {
+			System.err.println("Test failed: page is not empty.");
+			for (int i = 0; i < Page.PAGE_SIZE; i++) {
+				System.err.println(contents[i]);
+			}
+			throw new TestException("Page is not empty.");
 		}
 	}
 

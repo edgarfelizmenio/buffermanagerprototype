@@ -1,6 +1,10 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.InvocationTargetException;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
@@ -11,8 +15,6 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-import main.Test;
-import main.exceptions.TestException;
 
 /**
  * Test newPage, pinPage, unpinPage, and whether a dirty page is written to
@@ -48,7 +50,7 @@ public class Test8 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
+		System.err.println("Testing " + policy + "...");
 
 		char[] data = "This page is dirty!".toCharArray();
 		
@@ -60,12 +62,12 @@ public class Test8 implements Test {
 
 		Page page = bm.findPage(filename, pageNumber);
 
-		System.out.println("newPage successful");
+		System.err.println("newPage successful");
 
 		// Dirty page
 		page.setContents(data);
 		bm.unpinPage(filename, pageNumber, true);
-		System.out.println("Unpinning of page successful");
+		System.err.println("Unpinning of page successful");
 		bm.flushPages();
 
 		// Create a new buffer manager to see if it can handle it
@@ -75,12 +77,12 @@ public class Test8 implements Test {
 			throw new TestException("Pinning of page failed!");
 		}
 
-		System.out.println("Pinning of page successful");
+		System.err.println("Pinning of page successful");
 
 		if (!(new String(data).equals(new String(p.getContents()).substring(0, data.length)))) {
 			throw new TestException("Dirtied page not written to disk!");
 		}
-		System.out.println("Dirtied page written to disk");
+		System.err.println("Dirtied page written to disk");
 	}
 
 }

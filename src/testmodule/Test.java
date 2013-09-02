@@ -1,8 +1,9 @@
-package main;
+package testmodule;
 
 import java.lang.reflect.InvocationTargetException;
 
-import main.exceptions.TestException;
+import testmodule.exceptions.TestException;
+
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.diskspacemanager.exceptions.BadFileException;

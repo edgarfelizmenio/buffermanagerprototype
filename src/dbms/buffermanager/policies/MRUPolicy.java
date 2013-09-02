@@ -24,12 +24,12 @@ public class MRUPolicy extends Policy {
 	}
 
 	@Override
-	public void pagePinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pagePinned(int frameNumber, int pinCount) {
 		// do nothing
 	}
 
 	@Override
-	public void pageUnpinned(int frameNumber, int pinCount, boolean dirty) {
+	public void pageUnpinned(int frameNumber, int pinCount) {
 		recentlyUsedFrames.addLast(frameNumber);
 	}
 

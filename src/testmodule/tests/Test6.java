@@ -1,8 +1,12 @@
-package main.tests;
+package testmodule.tests;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
@@ -12,8 +16,6 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-import main.Test;
-import main.exceptions.TestException;
 
 public class Test6 implements Test {
 
@@ -47,7 +49,7 @@ public class Test6 implements Test {
 			}
 			frameNumbers.add(frameNumber);
 
-			System.out.println("Page " + (i + 6) + " at frame " + frameNumber
+			System.err.println("Page " + (i + 6) + " at frame " + frameNumber
 					+ " is pinned.");
 		}
 
@@ -67,7 +69,7 @@ public class Test6 implements Test {
 			frameNumbers.remove(frameNumber);
 
 			bm.unpinPage(filename, i + 6, false);
-			System.out.println("Page " + (i + 6) + " at frame " + frameNumber
+			System.err.println("Page " + (i + 6) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}
 
@@ -85,7 +87,7 @@ public class Test6 implements Test {
 				frameNumbers.add(frameNumber);
 			}
 
-			System.out.println("Page " + (i + 6) + " pinned in frame "
+			System.err.println("Page " + (i + 6) + " pinned in frame "
 					+ frameNumber + ".");
 		}
 
@@ -98,7 +100,7 @@ public class Test6 implements Test {
 				frameNumbers.remove(frameNumber);
 			}
 			bm.unpinPage(filename, i + 6, true);
-			System.out.println("Page " + (i + 6) + " at frame " + frameNumber
+			System.err.println("Page " + (i + 6) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}
 
@@ -116,7 +118,7 @@ public class Test6 implements Test {
 				frameNumbers.add(frameNumber);
 			}
 
-			System.out.println("Page " + (i + 7) + " pinned in frame "
+			System.err.println("Page " + (i + 7) + " pinned in frame "
 					+ frameNumber + ".");
 
 		}
@@ -130,7 +132,7 @@ public class Test6 implements Test {
 				frameNumbers.remove(frameNumber);
 			}
 			bm.unpinPage(filename, i + 7, true);
-			System.out.println("Page " + (i + 7) + " at frame " + frameNumber
+			System.err.println("Page " + (i + 7) + " at frame " + frameNumber
 					+ " is unpinned.");
 		}
 

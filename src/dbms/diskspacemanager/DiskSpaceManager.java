@@ -201,16 +201,19 @@ public class DiskSpaceManager {
 
 	/**
 	 * Lists the files in the database. This is only used for testing purposes.
+	 * @return The list of files in string format.
 	 */
-	public void listFiles() {
-		System.out.println("Directory: ");
+	public String listFiles() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Directory:\n");
 		if (directory.isEmpty()) {
-			System.out.println("empty");
+			sb.append("empty\n");
 		} else {
 			for (Entry<String, File> e : this.directory.entrySet()) {
-				System.out.println(e.getKey());
-				System.out.println(e.getValue());
+sb.append(e.getKey().toString() + "\n");
+sb.append(e.getValue().toString() + "\n");
 			}
 		}
+		return sb.toString();
 	}
 }

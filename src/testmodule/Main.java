@@ -1,4 +1,4 @@
-package main;
+package testmodule;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -11,7 +11,7 @@ public class Main {
 	public static void main(String[] args) throws URISyntaxException,
 			ClassNotFoundException {
 
-		String packagename = "main.tests";
+		String packagename = "testmodule.tests";
 		String path = packagename.replace('.', '/');
 		System.out.println(path);
 
@@ -26,6 +26,7 @@ public class Main {
 
 		List<Class<Test>> tests = new ArrayList<Class<Test>>();
 
+		System.out.println("Tests:");
 		for (String f : directory.list()) {
 			String className = packagename + '.'
 					+ f.substring(0, f.length() - 6);
@@ -41,7 +42,7 @@ public class Main {
 				t.execute();
 				System.out.println(c.getName() + " passed.\n");
 			} catch (Exception e) {
-				System.out.println(c.getName() + " failed.");
+				System.out.println(c.getName() + " failed. Check log for details");
 				e.printStackTrace();
 				System.out.println(e);
 			}

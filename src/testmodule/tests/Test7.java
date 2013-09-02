@@ -1,9 +1,11 @@
-package main.tests;
+package testmodule.tests;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.List;
+
+import testmodule.Test;
+import testmodule.exceptions.TestException;
+
 
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
@@ -13,9 +15,6 @@ import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
-
-import main.Test;
-import main.exceptions.TestException;
 
 public class Test7 implements Test {
 
@@ -47,7 +46,7 @@ public class Test7 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-		System.out.println("Testing " + policy + "...");
+		System.err.println("Testing " + policy + "...");
 
 		int[] pageIds = new int[30];
 		Page[] pages = new Page[30];
@@ -67,7 +66,7 @@ public class Test7 implements Test {
 
 		// Pin first 10 pages a second time
 		for (int i = 0; i < 10; i++) {
-			System.out.println("Pinning page " + i + " " + pageIds[i]);
+			System.err.println("Pinning page " + i + " " + pageIds[i]);
 			Page p = bm.pinPage(filename, pageIds[i]);
 			if (p == null) {
 				throw new TestException("Unable to pin page");
@@ -82,7 +81,7 @@ public class Test7 implements Test {
 
 		// Try to free pinned pages
 		for (int i = 5; i < 10; i++) {
-			System.out.println("Freeing page " + pageIds[i]);
+			System.err.println("Freeing page " + pageIds[i]);
 			boolean succeeded = true;
 			try {
 				bm.freePage(filename, pageIds[i]);
@@ -100,7 +99,7 @@ public class Test7 implements Test {
 			bm.unpinPage(filename, pageIds[i], false);
 			bm.unpinPage(filename, pageIds[i], false);
 			bm.freePage(filename, pageIds[i]);
-			System.out.println("Freed page " + pageIds[i]);
+			System.err.println("Freed page " + pageIds[i]);
 		}
 
 		// Get 14 more pages
@@ -109,7 +108,7 @@ public class Test7 implements Test {
 			if (pageNumber == Page.NO_PAGE_NUMBER) {
 				throw new TestException("BufferManager.newPage failed!");
 			}
-			System.out.println("New page " + i + "," + pageNumber);
+			System.err.println("New page " + i + "," + pageNumber);
 		}
 
 	}

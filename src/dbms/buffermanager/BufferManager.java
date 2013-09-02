@@ -27,9 +27,11 @@ public class BufferManager {
 	public static int DEFAULT_BUFFER_SIZE = 10;
 	public static String DEFAULT_POLICY = "LRU";
 
-	// private Frame[] bufferPool;
-
-	// buffer pool variables
+	/**
+	 * Abstraction of a frame. The buffer manager partitions the memory into an
+	 * array of frames. Each frame can hold up to one page. The array of frames
+	 * is called the buffer pool.
+	 */
 	private class Frame {
 		Page page;
 		String filename;
@@ -45,31 +47,61 @@ public class BufferManager {
 			dirty = false;
 		}
 
+		/**
+		 * Increment the pin count if a page is pinned to this frame.
+		 */
 		void pin() {
 			pinCount++;
 		}
 
+		/**
+		 * Decrement the pin count if the page in this frame is unpinned.
+		 */
 		void unpin() {
 			pinCount--;
 		}
 
+		/**
+		 * Set the dirty bit to true/false.
+		 * 
+		 * @param dirty
+		 *            The dirty bit.
+		 */
 		void setDirty(boolean dirty) {
 			this.dirty = dirty;
 		}
 
-		void setPage(String filename, int pageNum, Page page) {
+		/**
+		 * Puts a page to a frame. If the frame is holding a page, the old page
+		 * must be overwritten with the new page.
+		 * 
+		 * @param filename
+		 *            The file where the page is located.
+		 * @param pageId
+		 *            The pageId of the page.
+		 * @param page
+		 *            The page.
+		 */
+		void setPage(String filename, int pageId, Page page) {
 			this.filename = filename;
-			this.pageId = pageNum;
+			this.pageId = pageId;
 			this.page = page;
 		}
 
+		/**
+		 * Checks if a frame is free. A frame is free if it doesn't hold any
+		 * pages.
+		 * 
+		 * @return <code>true</code> if the frame is free, <code>false</code>
+		 *         otherwise.
+		 */
 		boolean isFree() {
 			return page == null;
 		}
 	}
 
 	private Frame[] bufferPool;
-	private Policy policy;
+	Policy policy;
 
 	/**
 	 * Creates a buffer manager with the specified size and buffer replacement
@@ -104,9 +136,9 @@ public class BufferManager {
 	}
 
 	/**
-	 * Pins a page in buffer pool. If the page is not yet in the buffer pool,
-	 * look for an available frame for this page, make a copy of the page, and
-	 * pin it. Write out the old page, if it is dirty, before reading.
+	 * Pins a page in the buffer pool. If the page is not yet in the buffer
+	 * pool, look for an available frame for the page, make a copy of the page,
+	 * and pin the copy. Write out the old page, if it is dirty, before reading.
 	 * 
 	 * @param filename
 	 *            The name of file that contains the page to be pinned.
@@ -132,7 +164,7 @@ public class BufferManager {
 			if ((f.filename == filename) && (f.pageId == pageId)) {
 				f.pin();
 				frame = f;
-				policy.pagePinned(i, f.pinCount, f.dirty);
+				policy.pagePinned(i, f.pinCount);
 				break;
 			}
 		}
@@ -162,7 +194,7 @@ public class BufferManager {
 				DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 				frame.setPage(filename, pageId, p);
-				policy.pagePinned(frameNumber, frame.pinCount, frame.dirty);
+				policy.pagePinned(frameNumber, frame.pinCount);
 			}
 		}
 
@@ -198,7 +230,7 @@ public class BufferManager {
 				}
 				f.unpin();
 				f.setDirty(dirty);
-				policy.pageUnpinned(i, f.pinCount, dirty);
+				policy.pageUnpinned(i, f.pinCount);
 				return;
 			}
 		}
@@ -258,7 +290,7 @@ public class BufferManager {
 			DiskSpaceManager.getInstance().readPage(filename, pageId, p);
 
 			frame.setPage(filename, pageId, p);
-			policy.pagePinned(frameNumber, frame.pinCount, frame.dirty);
+			policy.pagePinned(frameNumber, frame.pinCount);
 		}
 
 		// return null if frame is null
@@ -353,24 +385,28 @@ public class BufferManager {
 	}
 
 	/**
-	 * Finds the page in the buffer pool with the specified filename and page
-	 * Id. This is only used for testing purposes.
+	 * Gets the size of the buffer pool.
 	 * 
-	 * @param filename
-	 *            The name of the file containing the page.
-	 * @param pageId
-	 *            The page Id of the file containing the page.
-	 * @return The page in the buffer pool with the specified filename and page
-	 *         Id, <code>null</code> if the page is not in the buffer pool.
+	 * @return The size of the buffer pool.
 	 */
-	public Page findPage(String filename, int pageId) {
+	public int getPoolSize() {
+		return bufferPool.length;
+	}
+
+	/**
+	 * Finds a frame where a page can be pinned. Returns <code>null</code> if
+	 * there are no free pages and all pages have pin count greater than 0.
+	 * 
+	 * @return A free frame or frame with pin count 0.
+	 */
+	private int selectFrame() {
 		for (int i = 0; i < bufferPool.length; i++) {
-			if ((!bufferPool[i].isFree())
-					&& (bufferPool[i].filename == filename && bufferPool[i].pageId == pageId)) {
-				return bufferPool[i].page;
+			if (bufferPool[i].isFree()) {
+				return i;
 			}
 		}
-		return null;
+
+		return policy.chooseFrame();
 	}
 
 	/**
@@ -392,15 +428,6 @@ public class BufferManager {
 			}
 		}
 		return -1;
-	}
-
-	/**
-	 * Gets the size of the buffer pool.
-	 * 
-	 * @return The size of the buffer pool.
-	 */
-	public int getPoolSize() {
-		return bufferPool.length;
 	}
 
 	/**
@@ -437,18 +464,23 @@ public class BufferManager {
 	}
 
 	/**
-	 * Finds a frame where a page can be pinned. Returns <code>null</code> if
-	 * there are no free pages and all pages have pin count greater than 0.
+	 * Finds the page in the buffer pool with the specified filename and page
+	 * Id. This is only used for testing purposes.
 	 * 
-	 * @return A free frame or frame with pin count 0.
+	 * @param filename
+	 *            The name of the file containing the page.
+	 * @param pageId
+	 *            The page Id of the file containing the page.
+	 * @return The page in the buffer pool with the specified filename and page
+	 *         Id, <code>null</code> if the page is not in the buffer pool.
 	 */
-	private int selectFrame() {
+	public Page findPage(String filename, int pageId) {
 		for (int i = 0; i < bufferPool.length; i++) {
-			if (bufferPool[i].isFree()) {
-				return i;
+			if ((!bufferPool[i].isFree())
+					&& (bufferPool[i].filename == filename && bufferPool[i].pageId == pageId)) {
+				return bufferPool[i].page;
 			}
 		}
-
-		return policy.chooseFrame();
+		return null;
 	}
 }
