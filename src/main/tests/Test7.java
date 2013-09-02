@@ -3,9 +3,9 @@ package main.tests;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.List;
 
 import dbms.buffermanager.BufferManager;
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.diskspacemanager.DiskSpaceManager;
@@ -35,7 +35,6 @@ public class Test7 implements Test {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	private void testPolicy(String policy) throws InstantiationException,
 			IllegalAccessException, IllegalArgumentException,
 			SecurityException, InvocationTargetException,
@@ -55,14 +54,6 @@ public class Test7 implements Test {
 
 		Arrays.fill(pageIds, 0);
 		Arrays.fill(pages, null);
-
-		ClassLoader cl = Test7.class.getClassLoader();
-
-		Class<Frame> frameClass = (Class<Frame>) cl.loadClass(Frame.class
-				.getName());
-
-		Field pageIdField = frameClass.getDeclaredField("pageId");
-		pageIdField.setAccessible(true);
 
 		// Allocate 10 pages from database
 		for (int i = 0; i < 10; i++) {

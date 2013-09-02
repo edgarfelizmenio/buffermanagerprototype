@@ -1,10 +1,8 @@
 package main.tests;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import dbms.buffermanager.BufferManager;
-import dbms.buffermanager.Frame;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.diskspacemanager.DiskSpaceManager;
@@ -45,7 +43,6 @@ public class Test9 implements Test {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void testPolicy(String policy) throws InstantiationException,
 			IllegalAccessException, IllegalArgumentException,
 			SecurityException, InvocationTargetException,
@@ -58,15 +55,7 @@ public class Test9 implements Test {
 		DiskSpaceManager.getInstance().createFile(filename, 0);
 		BufferManager bm = new BufferManager(poolSize, policy);
 
-
-
 		int[] pageIds = new int[30];
-
-		ClassLoader cl = Test9.class.getClassLoader();
-		Class<Frame> frameClass = (Class<Frame>) cl.loadClass(Frame.class
-				.getName());
-		Field pageNumField = frameClass.getDeclaredField("pageId");
-		pageNumField.setAccessible(true);
 
 		// Allocate 10 pages to database
 		for (int i = 0; i < 10; i++) {
