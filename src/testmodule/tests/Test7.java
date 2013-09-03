@@ -6,7 +6,6 @@ import java.util.Arrays;
 import testmodule.Test;
 import testmodule.exceptions.TestException;
 
-
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
@@ -16,6 +15,14 @@ import dbms.diskspacemanager.exceptions.BadPageNumberException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
+/**
+ * Tests if the following cases are handled properly:
+ * <ul>
+ * <li>Allocating a new page.</li>
+ * <li>Pinning a page.</li>
+ * <li>Deallocating a page.</li>
+ * </ul>
+ */
 public class Test7 implements Test {
 
 	public void execute() throws DBFileException, BadFileException,

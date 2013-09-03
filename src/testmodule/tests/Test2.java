@@ -17,8 +17,12 @@ import dbms.diskspacemanager.page.Page;
 
 
 /**
- * Tests the pinPage, unpinPage, and writing dirty pages to disk.
- * 
+ * Tests if the following cases are handled properly:
+ * <ol>
+ * <li>Pinning a page.</li>
+ * <li>Unpinning a page.</li>
+ * <li>Writing dirty pages to disk.</li>
+ * </ol>
  */
 public class Test2 implements Test {
 
