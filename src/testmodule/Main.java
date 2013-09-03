@@ -33,6 +33,7 @@ public class Main {
 			System.out.println(className);
 			tests.add((Class<Test>) Class.forName(className));
 		}
+		System.out.println();
 
 		for (Class<Test> c : tests) {
 			Test t;

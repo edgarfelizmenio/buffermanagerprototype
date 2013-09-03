@@ -1,4 +1,7 @@
 /bin/
+makefile~
+.gitignore~
+run.log
 .project
 .classpath
 .settings/
