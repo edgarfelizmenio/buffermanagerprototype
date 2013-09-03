@@ -27,7 +27,13 @@ main_program: init tests
 
 test: main_program
 	@java -classpath "bin" testmodule.Main 2> run.log
-	gedit run.log
-
+	
+	UNAME_S := uname -s
+	ifeq(UNAME_S, "Linux")
+		echo "linux"
+	endif
+	ifeq(UNAME_S, "Darwin")
+		echo "macfag"
+	endif
 clean: test
 	rm -r "bin"
