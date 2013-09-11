@@ -7,7 +7,7 @@ import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.buffermanager.policies.LRUPolicy;
 import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
-import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
@@ -149,13 +149,13 @@ public class BufferManager {
 	 *         return <code>null</code>.
 	 * @throws BadFileException
 	 *             If the file does not exist.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If the page does not exist.
 	 * @throws DBFileException
 	 *             If the page is not allocated.
 	 */
 	public Page pinPage(String filename, int pageId) throws BadFileException,
-			BadPageNumberException, DBFileException {
+			BadPageIDException, DBFileException {
 		Frame frame = null;
 
 		// case 1: frame is in the buffer pool
@@ -256,11 +256,11 @@ public class BufferManager {
 	 *             unallocated page is requested.
 	 * @throws BadFileException
 	 *             If the file does not exist.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If the page does not exist.
 	 */
 	public int newPage(String filename, int numPages) throws DBFileException,
-			BadFileException, BadPageNumberException {
+			BadFileException, BadPageIDException {
 
 		Frame frame = null;
 
@@ -312,11 +312,11 @@ public class BufferManager {
 	 *             If the page is pinned.
 	 * @throws DBFileException
 	 *             If the number of pages to be deallocated is not positive.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If the page does not exist.
 	 */
 	public void freePage(String filename, int pageId)
-			throws PagePinnedException, DBFileException, BadPageNumberException {
+			throws PagePinnedException, DBFileException, BadPageIDException {
 		int frameNumber = this.findFrame(filename, pageId);
 		if (frameNumber != -1) {
 			Frame f = bufferPool[frameNumber];
@@ -342,13 +342,13 @@ public class BufferManager {
 	 *            The pageId of the page to be flushed.
 	 * @throws BadFileException
 	 *             If the file does not exist.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If the page does not exist.
 	 * @throws DBFileException
 	 *             If the page is not allocated.
 	 */
 	public void flushPage(String filename, int pageId) throws BadFileException,
-			BadPageNumberException, DBFileException {
+			BadPageIDException, DBFileException {
 		int frameNumber = findFrame(filename, pageId);
 		if (frameNumber > -1) {
 			Frame f = bufferPool[frameNumber];
@@ -367,13 +367,13 @@ public class BufferManager {
 	 * @throws BadFileException
 	 *             If a page that belongs to a deleted (or a nonexistent) file
 	 *             will be flushed.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If a page that is already deleted from the database will be
 	 *             flushed.
 	 * @throws DBFileException
 	 *             If an unallocated page will be flushed.
 	 */
-	public void flushPages() throws BadFileException, BadPageNumberException,
+	public void flushPages() throws BadFileException, BadPageIDException,
 			DBFileException {
 		for (Frame f : bufferPool) {
 			if (f.dirty) {

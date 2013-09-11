@@ -3,15 +3,15 @@ package dbms.diskspacemanager.exceptions;
 /**
  * Thrown when there is a request for a page that does not exist.
  */
-public class BadPageNumberException extends Exception {
+public class BadPageIDException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	public BadPageNumberException(String message) {
+	public BadPageIDException(String message) {
 		super(message);
 	}
 
-	public BadPageNumberException() {
+	public BadPageIDException() {
 		super();
 	}
 

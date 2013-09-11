@@ -11,7 +11,7 @@ import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
 import dbms.diskspacemanager.DiskSpaceManager;
 import dbms.diskspacemanager.exceptions.BadFileException;
-import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
@@ -23,7 +23,7 @@ import dbms.diskspacemanager.page.Page;
 public class Test1 implements Test {
 
 	public void execute() throws DBFileException, BadFileException,
-			BadPageNumberException, TestException, NoSuchMethodException,
+			BadPageIDException, TestException, NoSuchMethodException,
 			SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			NoSuchFieldException, InstantiationException,
