@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import dbms.diskspacemanager.exceptions.BadFileException;
-import dbms.diskspacemanager.exceptions.BadPageNumberException;
+import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
@@ -114,27 +114,27 @@ public class DiskSpaceManager {
 	 * 
 	 * @param filename
 	 *            The file where the pages will be deallocated.
-	 * @param startPageNum
+	 * @param startPageId
 	 *            The page number of the first page that will be deallocated
 	 * @param numPages
 	 *            The number of pages of that will be deallocated.
 	 * @throws DBFileException
 	 *             If <code>numPages</code> is not positive.
-	 * @throws BadPageNumberException
+	 * @throws BadPageIDException
 	 *             If <code>startPageNum</code> is not illegal.
 	 */
-	public void deallocatePages(String filename, int startPageNum, int numPages)
-			throws DBFileException, BadPageNumberException {
+	public void deallocatePages(String filename, int startPageId, int numPages)
+			throws DBFileException, BadPageIDException {
 		if (numPages <= 0) {
 			throw new DBFileException("Non positive run size.");
 		}
 
 		File f = directory.get(filename);
-		if ((startPageNum < 0) || (startPageNum + numPages - 1 >= f.numPages)) {
-			throw new BadPageNumberException(startPageNum + " " + numPages);
+		if ((startPageId < 0) || (startPageId + numPages - 1 >= f.numPages)) {
+			throw new BadPageIDException(startPageId + " " + numPages);
 		}
 
-		for (int i = startPageNum; i < startPageNum + numPages; i++) {
+		for (int i = startPageId; i < startPageId + numPages; i++) {
 			f.pages[i] = null;
 		}
 	}
@@ -142,21 +142,21 @@ public class DiskSpaceManager {
 	/**
 	 * Writes the contents of the specified page to disk.
 	 * @param filename The file containing the page.
-	 * @param pageNum The number of the page.
+	 * @param pageId The number of the page.
 	 * @param page The contents of the page.
 	 * @throws BadFileException If the file is not in the database.
-	 * @throws BadPageNumberException If the page number if not in the file.
+	 * @throws BadPageIDException If the page number if not in the file.
 	 * @throws DBFileException If the file does not contain any pages.
 	 */
-	public void writePage(String filename, int pageNum, Page page)
-			throws BadFileException, BadPageNumberException, DBFileException {
+	public void writePage(String filename, int pageId, Page page)
+			throws BadFileException, BadPageIDException, DBFileException {
 		if (!directory.containsKey(filename)) {
 			throw new BadFileException();
 		}
 
 		File f = directory.get(filename);
-		if ((pageNum < 0) || (pageNum >= f.numPages)) {
-			throw new BadPageNumberException();
+		if ((pageId < 0) || (pageId >= f.numPages)) {
+			throw new BadPageIDException();
 		}
 
 		if (f.numPages == 0) {
@@ -164,39 +164,39 @@ public class DiskSpaceManager {
 		}
 
 		// Make sure that page has actually been allocated.
-		if (f.pages[pageNum] == null) {
+		if (f.pages[pageId] == null) {
 			throw new DBFileException("Page not allocated.");
 		}
 
-		f.pages[pageNum].setContents(page.getContents());
+		f.pages[pageId].setContents(page.getContents());
 	}
 
 	/**
 	 * Copies the contents of the specified page from disk into the <code>Page</code> provided.
 	 * @param filename The name of the file containing the page that will be copied.
-	 * @param pageNum The page number of the page that will be copied.
+	 * @param pageId The page number of the page that will be copied.
 	 * @param page The page object where the contents will be copied.
 	 * @throws BadFileException If the file does not exist.
-	 * @throws BadPageNumberException If the page number is not in the file.
+	 * @throws BadPageIDException If the page number is not in the file.
 	 * @throws DBFileException If the file does not contain any pages.
 	 */
-	public void readPage(String filename, int pageNum, Page page)
-			throws BadFileException, BadPageNumberException, DBFileException {
+	public void readPage(String filename, int pageId, Page page)
+			throws BadFileException, BadPageIDException, DBFileException {
 		if (!directory.containsKey(filename)) {
 			throw new BadFileException();
 		}
 
 		File f = directory.get(filename);
 
-		if ((pageNum < 0) || (pageNum >= f.numPages)) {
-			throw new BadPageNumberException();
+		if ((pageId < 0) || (pageId >= f.numPages)) {
+			throw new BadPageIDException();
 		}
 
-		if (f.pages[pageNum] == null) {
+		if (f.pages[pageId] == null) {
 			throw new DBFileException("Page not allocated");
 		}
 
-		page.setContents(f.pages[pageNum].getContents());
+		page.setContents(f.pages[pageId].getContents());
 	}
 
 	/**

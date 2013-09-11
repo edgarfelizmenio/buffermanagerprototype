@@ -65,8 +65,8 @@ public class Test12 implements Test {
 				throw new TestException("Pinning page failed!");
 			}
 			System.err.println("after pinPage " + i);
-			char[] data = ("This is test 8 for page " + i).toCharArray();
-			p.setContents(data);
+			String dataStr = "This is test 8 for page " + i;
+			p.setContents(dataStr.getBytes());
 			bm.flushPage(filename, i);
 			System.err.println("after flushPage " + i);
 			bm.unpinPage(filename, i, true);
@@ -80,7 +80,7 @@ public class Test12 implements Test {
 		
 		// Verify that page is empty
 		boolean empty = true;
-		char contents[] = p.getContents();
+		byte contents[] = p.getContents();
 		for (int i = 0; i < Page.PAGE_SIZE; i++) {
 			if (contents[i] != '\0') {
 				empty = false;

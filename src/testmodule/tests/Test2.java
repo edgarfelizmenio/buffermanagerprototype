@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import testmodule.Test;
 import testmodule.exceptions.TestException;
 
-
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.diskspacemanager.DiskSpaceManager;
@@ -14,7 +13,6 @@ import dbms.diskspacemanager.exceptions.BadFileException;
 import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
-
 
 /**
  * Tests if the following cases are handled properly:
@@ -70,10 +68,9 @@ public class Test2 implements Test {
 			}
 			System.err.println("After pin page " + i);
 
-			char[] data = ("This is test 1 for page " + i).toCharArray();
+			String dataStr = "This is test 1 for page " + i;
 
-
-			p.setContents(data);
+			p.setContents(dataStr.getBytes());
 
 			bm.unpinPage(filename, i, true);
 
@@ -91,10 +88,9 @@ public class Test2 implements Test {
 
 			Field contentsField = p.getClass().getDeclaredField("contents");
 			contentsField.setAccessible(true);
-			char[] contents = (char[]) contentsField.get(p);
 
+			String readBack = new String((byte[]) contentsField.get(p));
 			String original = "This is test 1 for page " + i;
-			String readBack = new String(contents);
 
 			if (!original.equals(readBack.substring(0, original.length()))) {
 				throw new TestException("Page content incorrect"); // Contents

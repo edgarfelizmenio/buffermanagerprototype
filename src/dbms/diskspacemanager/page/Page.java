@@ -17,10 +17,10 @@ public class Page {
 	/**
 	 * Contents of a page.
 	 */
-	private char[] contents;
+	private byte[] contents;
 
 	private Page() {
-		this.contents = new char[PAGE_SIZE];
+		this.contents = new byte[PAGE_SIZE];
 		for (int i = 0; i < PAGE_SIZE; i++) {
 			this.contents[i] = '\0';
 		}
@@ -39,7 +39,7 @@ public class Page {
 	 * Assumption: The length of contents will not exceed page size. 
 	 * @param contents
 	 */
-	public void setContents(char[] contents) {
+	public void setContents(byte[] contents) {
 		setContents(0, contents);
 	}
 
@@ -48,7 +48,7 @@ public class Page {
 	 * Assumption: The length of contents will not exceed page size. 
 	 * @param contents
 	 */
-	public void setContents(int start, char[] contents) {
+	public void setContents(int start, byte[] contents) {
 		for (int i = 0, j = start; i < contents.length; i++, j++) {
 			this.contents[j] = contents[i];
 		}
@@ -58,7 +58,7 @@ public class Page {
 	 * Gets a copy of the page contents.
 	 * @return The contents of the page.
 	 */
-	public char[] getContents() {
+	public byte[] getContents() {
 		return Arrays.copyOf(this.contents, this.contents.length);
 	}
 }

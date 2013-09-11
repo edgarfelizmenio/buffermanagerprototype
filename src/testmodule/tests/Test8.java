@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import testmodule.Test;
 import testmodule.exceptions.TestException;
 
-
 import dbms.buffermanager.BufferManager;
 import dbms.buffermanager.exceptions.PageNotPinnedException;
 import dbms.buffermanager.exceptions.PagePinnedException;
@@ -55,8 +54,8 @@ public class Test8 implements Test {
 
 		System.err.println("Testing " + policy + "...");
 
-		char[] data = "This page is dirty!".toCharArray();
-		
+		String dataStr = "This page is dirty!";
+
 		int pageNumber = bm.newPage(filename, 1);
 
 		if (pageNumber == Page.NO_PAGE_NUMBER) {
@@ -68,7 +67,7 @@ public class Test8 implements Test {
 		System.err.println("newPage successful");
 
 		// Dirty page
-		page.setContents(data);
+		page.setContents(dataStr.getBytes());
 		bm.unpinPage(filename, pageNumber, true);
 		System.err.println("Unpinning of page successful");
 		bm.flushPages();
@@ -82,7 +81,9 @@ public class Test8 implements Test {
 
 		System.err.println("Pinning of page successful");
 
-		if (!(new String(data).equals(new String(p.getContents()).substring(0, data.length)))) {
+		if (!(dataStr.equals(
+				new String(p.getContents()).substring(0,
+				dataStr.length())))) {
 			throw new TestException("Dirtied page not written to disk!");
 		}
 		System.err.println("Dirtied page written to disk");

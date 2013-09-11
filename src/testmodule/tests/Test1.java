@@ -42,8 +42,8 @@ public class Test1 implements Test {
 
 		Page p = Page.makePage();
 
-		p.setContents(1, "K".toCharArray());
-		p.setContents(2, "R".toCharArray());
+		p.setContents(1, "K".getBytes());
+		p.setContents(2, "R".getBytes());
 
 		fs.writePage("testing", 3, p);
 		fs.readPage("testing", 0, p);

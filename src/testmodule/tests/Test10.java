@@ -65,8 +65,8 @@ public class Test10 implements Test {
 				throw new TestException("Pinning page failed!");
 			}
 			System.err.println("After pinPage " + i);
-			char[] data = ("This is test 10 for page " + i).toCharArray();
-			p.setContents(data);
+			String dataStr = "This is test 10 for page " + i;
+			p.setContents(dataStr.getBytes());
 			bm.flushPage(filename, i);
 			System.err.println("After flushPage " + i);
 			bm.unpinPage(filename, i, true);
