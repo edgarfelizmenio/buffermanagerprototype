@@ -15,11 +15,14 @@ import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-
 /**
- * Test newPage, pinPage, unpinPage, and whether a dirty page is written to
- * disk.
- * 
+ * Tests if the following cases are handled properly:
+ * <ol>
+ * <li>Allocating a page.</li>
+ * <li>Pinning a page.</li>
+ * <li>Unpinning a page.</li>
+ * <li>Writing a dirty page to disk.</li>
+ * </ol>
  */
 public class Test8 implements Test {
 

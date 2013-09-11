@@ -17,7 +17,7 @@ import dbms.diskspacemanager.page.Page;
 
 
 /**
- * Test stub for the DiskSpaceManager
+ * Tests if the DiskSpace manager is correct.
  * 
  */
 public class Test1 implements Test {

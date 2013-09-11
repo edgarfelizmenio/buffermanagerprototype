@@ -16,7 +16,10 @@ import dbms.diskspacemanager.exceptions.BadPageIDException;
 import dbms.diskspacemanager.exceptions.DBFileException;
 import dbms.diskspacemanager.page.Page;
 
-
+/**
+ * Tests the random replacement policy.
+ * 
+ */
 public class Test6 implements Test {
 
 	public void execute() throws DBFileException, BadFileException,

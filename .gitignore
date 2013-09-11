@@ -1,6 +1,7 @@
 /bin/
 makefile~
 .gitignore~
+*.java~
 run.log
 .project
 .classpath

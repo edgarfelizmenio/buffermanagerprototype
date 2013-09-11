@@ -17,12 +17,12 @@ import dbms.diskspacemanager.page.Page;
 
 /**
  * Tests if the following cases are handled properly:
- * <ol>
+ * <ul>
  * <li>Pinning an allocated page.</li>
  * <li>Flushing all the pages.</li>
  * <li>Erasing a file.</li>
  * <li>Flushing all the pages twice.</li>
- * </ol>
+ * </ul>
  */
 public class Test11 implements Test {
 
